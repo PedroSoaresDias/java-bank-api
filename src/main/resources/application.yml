@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: java-bank
+  openapi:
+    enabled: true
+  threads:
+    virtual:
+      enabled: true
