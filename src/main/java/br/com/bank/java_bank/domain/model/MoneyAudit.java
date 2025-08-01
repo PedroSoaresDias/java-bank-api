@@ -9,13 +9,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "money_audits")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class MoneyAudit {
     @Id
     private UUID transactionId;
