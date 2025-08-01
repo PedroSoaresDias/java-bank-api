@@ -1,11 +1,11 @@
 package br.com.bank.java_bank.services;
 
-import java.time.OffsetDateTime;
+// import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Map;
+// import java.util.Map;
 
 import br.com.bank.java_bank.domain.model.AccountWallet;
-import br.com.bank.java_bank.domain.model.MoneyAudit;
+// import br.com.bank.java_bank.domain.model.MoneyAudit;
 
 public interface AccountWalletService {
     List<AccountWallet> getAllAccounts();
@@ -18,7 +18,7 @@ public interface AccountWalletService {
 
     void withdraw(String pix, long amount);
 
-    Map<OffsetDateTime, List<MoneyAudit>> getHistory(String pix);
+    // Map<OffsetDateTime, List<MoneyAudit>> getHistory(String pix);
 
-    void transfer(String fromPix, String toPix, long amount);
+    // void transfer(String fromPix, String toPix, long amount);
 }
