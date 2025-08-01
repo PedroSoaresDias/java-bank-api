@@ -9,4 +9,7 @@ public interface InvestmentWalletService {
 
     InvestmentWallet investFromAccount(String pix, long investmentId);
 
+    InvestmentWallet deposit(String pix, long amount);
+
+    InvestmentWallet withdraw(String pix, long amount);
 }

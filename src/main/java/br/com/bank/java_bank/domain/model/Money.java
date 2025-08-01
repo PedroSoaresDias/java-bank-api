@@ -36,8 +36,12 @@ public class Money {
     @OneToMany(mappedBy = "money", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MoneyAudit> history = new ArrayList<>();
 
-    public void addHistory(MoneyAudit audit) {
-        history.add(audit);
+    public Money(final MoneyAudit audit) {
+        this.history.add(audit);
+    }
+
+    public void addHistory(final MoneyAudit audit) {
         audit.setMoney(this);
+        this.history.add(audit);
     }
 }

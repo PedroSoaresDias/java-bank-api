@@ -19,4 +19,6 @@ public interface AccountWalletService {
     void withdraw(String pix, long amount);
 
     Map<OffsetDateTime, List<MoneyAudit>> getHistory(String pix);
+
+    void transfer(String fromPix, String toPix, long amount);
 }
