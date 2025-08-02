@@ -1,24 +1,20 @@
 package br.com.bank.java_bank.services;
 
-// import java.time.OffsetDateTime;
 import java.util.List;
-// import java.util.Map;
 
-import br.com.bank.java_bank.domain.model.AccountWallet;
-// import br.com.bank.java_bank.domain.model.MoneyAudit;
+import br.com.bank.java_bank.domain.DTO.AccountResponse;
+import br.com.bank.java_bank.domain.DTO.CreateAccountRequest;
+import br.com.bank.java_bank.domain.DTO.DepositRequest;
+import br.com.bank.java_bank.domain.DTO.WithdrawRequest;
 
 public interface AccountWalletService {
-    List<AccountWallet> getAllAccounts();
+    List<AccountResponse> getAllAccounts();
+    
+    AccountResponse getAccountByPix(String pix);
 
-    AccountWallet getAccountByPix(String pix);
+    AccountResponse createAccount(CreateAccountRequest request);
 
-    AccountWallet createAccount(List<String> pix, long amount, String description);
+    void deposit(DepositRequest request);
 
-    void deposit(String pix, long amount, String description);
-
-    void withdraw(String pix, long amount);
-
-    // Map<OffsetDateTime, List<MoneyAudit>> getHistory(String pix);
-
-    // void transfer(String fromPix, String toPix, long amount);
+    void withdraw(WithdrawRequest request);
 }

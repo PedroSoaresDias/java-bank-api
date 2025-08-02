@@ -1,26 +1,31 @@
 package br.com.bank.java_bank.domain.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
+import br.com.bank.java_bank.exceptions.NoFundsEnoughException;
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Table;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
+import jakarta.persistence.GenerationType;
 
-@Entity
-@Table(name = "account_wallet")
+@Entity(name = "account_wallet")
 @Getter
 @Setter
-public class AccountWallet extends Wallet {
+public class AccountWallet {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String pix;
+    private long balance;
 
-    @ElementCollection
-    @CollectionTable(name = "pix_keys")
-    @JoinColumn(name = "wallet_id")
-    @Column(name = "pix_key")
-    private List<String> pix = new ArrayList<>();
+    public void deposit(long amount) {
+        this.balance += amount;
+    }
+    
+    public void withdraw(long amount) {
+        if (balance < amount)
+            throw new NoFundsEnoughException("Saldo insuficiente para realizar o saque.");
+
+        this.balance -= amount;
+    }
 }
