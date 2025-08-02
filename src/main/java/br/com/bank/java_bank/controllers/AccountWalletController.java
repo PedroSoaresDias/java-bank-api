@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import br.com.bank.java_bank.domain.DTO.AccountResponse;
 import br.com.bank.java_bank.domain.DTO.CreateAccountRequest;
 import br.com.bank.java_bank.domain.DTO.DepositRequest;
+import br.com.bank.java_bank.domain.DTO.TransferRequest;
 import br.com.bank.java_bank.domain.DTO.WithdrawRequest;
 import br.com.bank.java_bank.services.AccountWalletService;
 
@@ -32,7 +33,7 @@ public class AccountWalletController {
     }
 
     @GetMapping("/{pix}")
-public ResponseEntity<AccountResponse> getAccountByPix(@PathVariable("pix") String pix) {
+    public ResponseEntity<AccountResponse> getAccountByPix(@PathVariable("pix") String pix) {
         return ResponseEntity.ok(service.getAccountByPix(pix));
     }
 
@@ -51,6 +52,12 @@ public ResponseEntity<AccountResponse> getAccountByPix(@PathVariable("pix") Stri
     @PostMapping("/withdraw")
     public ResponseEntity<Void> withdraw(@RequestBody WithdrawRequest request) {
         service.withdraw(request);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PostMapping("/transfer")
+    public ResponseEntity<Void> transfer(@RequestBody TransferRequest request) {
+        service.transfer(request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

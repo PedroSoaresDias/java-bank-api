@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import br.com.bank.java_bank.domain.DTO.AccountResponse;
 import br.com.bank.java_bank.domain.DTO.CreateAccountRequest;
 import br.com.bank.java_bank.domain.DTO.DepositRequest;
+import br.com.bank.java_bank.domain.DTO.TransferRequest;
 import br.com.bank.java_bank.domain.DTO.WithdrawRequest;
 import br.com.bank.java_bank.domain.model.AccountWallet;
 import br.com.bank.java_bank.domain.repository.AccountRepository;
@@ -67,6 +68,20 @@ public class AccountWalletServiceImpl implements AccountWalletService {
 
         wallet.withdraw(request.amount());
         accountRepository.save(wallet);
+    }
+
+    @Override
+    public void transfer(TransferRequest request) {
+        AccountWallet source = accountRepository.findByPixContaining(request.fromPix())
+                .orElseThrow(() -> new AccountNotFoundException("Conta de origem não foi encontrada"));
+        AccountWallet target = accountRepository.findByPixContaining(request.toPix())
+                .orElseThrow(() -> new AccountNotFoundException("Conta de destino não foi encontrada"));
+
+        source.withdraw(request.amount());
+        target.deposit(request.amount());
+
+        accountRepository.save(source);
+        accountRepository.save(target);
     }
 
     private AccountResponse convertToDTO(AccountWallet account) {
