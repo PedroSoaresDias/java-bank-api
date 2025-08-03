@@ -17,9 +17,11 @@ import br.com.bank.java_bank.domain.DTO.DepositRequest;
 import br.com.bank.java_bank.domain.DTO.TransferRequest;
 import br.com.bank.java_bank.domain.DTO.WithdrawRequest;
 import br.com.bank.java_bank.services.AccountWalletService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/accounts")
+@Tag(name = "Conta Corrente", description = "Operações com conta corrente")
 public class AccountWalletController {
     private final AccountWalletService service;
 

@@ -16,9 +16,11 @@ import br.com.bank.java_bank.domain.DTO.InvestmentDepositRequest;
 import br.com.bank.java_bank.domain.DTO.InvestmentResponse;
 import br.com.bank.java_bank.domain.model.InvestmentWallet;
 import br.com.bank.java_bank.services.InvestmentWalletService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/investments")
+@Tag(name = "Conta de Investimentos", description = "Operações com conta de investimentos")
 public class InvestmentWalletController {
     private final InvestmentWalletService service;
 

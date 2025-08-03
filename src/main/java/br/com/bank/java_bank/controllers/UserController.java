@@ -16,10 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.bank.java_bank.domain.DTO.CreateUserRequest;
 import br.com.bank.java_bank.domain.DTO.UserResponse;
 import br.com.bank.java_bank.services.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/users")
+@Tag(name = "Módulo de Usuários", description = "Cuida do gerenciamento de usuários da aplicação")
 public class UserController {
     private final UserService userService;
 
