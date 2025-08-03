@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.bank.java_bank.domain.DTO.CreateUserRequest;
 import br.com.bank.java_bank.domain.DTO.UserResponse;
 import br.com.bank.java_bank.services.UserService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/users")
@@ -37,13 +38,13 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createUser(@RequestBody CreateUserRequest request) {
+    public ResponseEntity<Void> createUser(@Valid @RequestBody CreateUserRequest request) {
         userService.createUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateUser(@PathVariable("id") Long id, @RequestBody CreateUserRequest request) {
+    public ResponseEntity<Void> updateUser(@PathVariable("id") Long id, @Valid @RequestBody CreateUserRequest request) {
         userService.updateUser(id, request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
