@@ -17,6 +17,7 @@ import br.com.bank.java_bank.domain.DTO.InvestmentResponse;
 import br.com.bank.java_bank.domain.model.InvestmentWallet;
 import br.com.bank.java_bank.services.InvestmentWalletService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/investments")
@@ -34,24 +35,24 @@ public class InvestmentWalletController {
     }
 
     @GetMapping("/{pix}")
-    public ResponseEntity<InvestmentResponse> findInvestmentByPix(@PathVariable("pix") String pix) {
+    public ResponseEntity<InvestmentResponse> findInvestmentByPix(@Valid @PathVariable("pix") String pix) {
         return ResponseEntity.ok(service.findInvestmentByPix(pix));
     }
 
     @PostMapping
-    public ResponseEntity<InvestmentWallet> create(@RequestBody CreateInvestmentWalletRequest request) {
+    public ResponseEntity<InvestmentWallet> create(@Valid @RequestBody CreateInvestmentWalletRequest request) {
         service.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/invest")
-    public ResponseEntity<Void> invest(@RequestBody InvestmentDepositRequest request) {
+    public ResponseEntity<Void> invest(@Valid @RequestBody InvestmentDepositRequest request) {
         service.invest(request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<Void> withdraw(@RequestBody InvestmentDepositRequest request) {
+    public ResponseEntity<Void> withdraw(@Valid @RequestBody InvestmentDepositRequest request) {
         service.withdraw(request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

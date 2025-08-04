@@ -18,6 +18,7 @@ import br.com.bank.java_bank.domain.DTO.TransferRequest;
 import br.com.bank.java_bank.domain.DTO.WithdrawRequest;
 import br.com.bank.java_bank.services.AccountWalletService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/accounts")
@@ -35,30 +36,30 @@ public class AccountWalletController {
     }
 
     @GetMapping("/{pix}")
-    public ResponseEntity<AccountResponse> getAccountByPix(@PathVariable("pix") String pix) {
+    public ResponseEntity<AccountResponse> getAccountByPix(@Valid @PathVariable("pix") String pix) {
         return ResponseEntity.ok(service.getAccountByPix(pix));
     }
 
     @PostMapping
-    public ResponseEntity<AccountResponse> createAccount(@RequestBody CreateAccountRequest request) {
+    public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
         service.createAccount(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/deposit")
-    public ResponseEntity<Void> deposit(@RequestBody DepositRequest request) {
+    public ResponseEntity<Void> deposit(@Valid @RequestBody DepositRequest request) {
         service.deposit(request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<Void> withdraw(@RequestBody WithdrawRequest request) {
+    public ResponseEntity<Void> withdraw(@Valid @RequestBody WithdrawRequest request) {
         service.withdraw(request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/transfer")
-    public ResponseEntity<Void> transfer(@RequestBody TransferRequest request) {
+    public ResponseEntity<Void> transfer(@Valid @RequestBody TransferRequest request) {
         service.transfer(request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
