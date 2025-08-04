@@ -9,5 +9,5 @@ import br.com.bank.java_bank.domain.model.InvestmentWallet;
 
 @Repository
 public interface InvestmentRepository extends JpaRepository<InvestmentWallet, Long> {
-    Optional<InvestmentWallet> findByPixContaining(String pix);
+    Optional<InvestmentWallet> findByUserId(Long userId);
 }

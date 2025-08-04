@@ -15,9 +15,9 @@ public interface AccountWalletService {
 
     AccountResponse createAccount(CreateAccountRequest request);
 
-    void deposit(DepositRequest request);
+    void deposit(String email, DepositRequest request);
 
-    void withdraw(WithdrawRequest request);
+    void withdraw(String email, WithdrawRequest request);
 
-    void transfer(TransferRequest request);
+    void transfer(String email, TransferRequest request);
 }

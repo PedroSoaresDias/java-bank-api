@@ -5,9 +5,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+// import jakarta.validation.constraints.NotBlank;
+// import jakarta.validation.constraints.NotEmpty;
+// import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 // import jakarta.persistence.JoinColumn;
 // import jakarta.persistence.OneToOne;
@@ -22,10 +24,10 @@ public class InvestmentWallet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "A chave pix não pode está em branco")
-    @NotNull(message = "A chave pix não pode ser nula")
-    @NotEmpty(message = "A chave pix não pode está vazia")
-    private String pix;
+    // @NotBlank(message = "A chave pix não pode está em branco")
+    // @NotNull(message = "A chave pix não pode ser nula")
+    // @NotEmpty(message = "A chave pix não pode está vazia")
+    // private String pix;
 
     @Positive(message = "O valor do saldo deve ser positivo")
     private long balance;
@@ -36,9 +38,9 @@ public class InvestmentWallet {
     @Positive(message = "O valor do depósito inicial deve ser positivo")
     private long initialDeposit;
 
-    // @OneToOne
-    // @JoinColumn(name = "account_id", unique = true)
-    // private AccountWallet wallet;
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public void deposit(long amount) {
         this.balance += amount;

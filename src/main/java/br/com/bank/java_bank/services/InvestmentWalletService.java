@@ -10,13 +10,13 @@ import br.com.bank.java_bank.domain.model.InvestmentWallet;
 public interface InvestmentWalletService {
     List<InvestmentResponse> findAllInvestments();
 
-    InvestmentResponse findInvestmentByPix(String pix);
+    InvestmentResponse findInvestmentById(Long id);
 
     InvestmentWallet create(CreateInvestmentWalletRequest request);
 
-    void invest(InvestmentDepositRequest request);
+    void invest(String email, InvestmentDepositRequest request);
 
-    void withdraw(InvestmentDepositRequest request);
+    void withdraw(String email, InvestmentDepositRequest request);
 
     void updateYield();
 }

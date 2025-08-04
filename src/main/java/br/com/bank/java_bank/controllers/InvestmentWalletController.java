@@ -1,5 +1,6 @@
 package br.com.bank.java_bank.controllers;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -35,8 +36,8 @@ public class InvestmentWalletController {
     }
 
     @GetMapping("/{pix}")
-    public ResponseEntity<InvestmentResponse> findInvestmentByPix(@Valid @PathVariable("pix") String pix) {
-        return ResponseEntity.ok(service.findInvestmentByPix(pix));
+    public ResponseEntity<InvestmentResponse> findInvestmentByPix(@Valid @PathVariable("id") Long id) {
+        return ResponseEntity.ok(service.findInvestmentById(id));
     }
 
     @PostMapping
@@ -46,14 +47,14 @@ public class InvestmentWalletController {
     }
 
     @PostMapping("/invest")
-    public ResponseEntity<Void> invest(@Valid @RequestBody InvestmentDepositRequest request) {
-        service.invest(request);
+    public ResponseEntity<Void> invest(@Valid @RequestBody InvestmentDepositRequest request, Principal principal) {
+        service.invest(principal.getName(), request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<Void> withdraw(@Valid @RequestBody InvestmentDepositRequest request) {
-        service.withdraw(request);
+    public ResponseEntity<Void> withdraw(@Valid @RequestBody InvestmentDepositRequest request, Principal principal) {
+        service.withdraw(principal.getName(), request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
     

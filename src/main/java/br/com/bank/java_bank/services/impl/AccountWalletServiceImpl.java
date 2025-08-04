@@ -11,17 +11,22 @@ import br.com.bank.java_bank.domain.DTO.DepositRequest;
 import br.com.bank.java_bank.domain.DTO.TransferRequest;
 import br.com.bank.java_bank.domain.DTO.WithdrawRequest;
 import br.com.bank.java_bank.domain.model.AccountWallet;
+import br.com.bank.java_bank.domain.model.User;
 import br.com.bank.java_bank.domain.repository.AccountRepository;
+import br.com.bank.java_bank.domain.repository.UserRepository;
 import br.com.bank.java_bank.exceptions.AccountNotFoundException;
+import br.com.bank.java_bank.exceptions.UserNotFoundException;
 import br.com.bank.java_bank.services.AccountWalletService;
 
 @Service
 public class AccountWalletServiceImpl implements AccountWalletService {
 
     private final AccountRepository accountRepository;
+    private final UserRepository userRepository;
 
-    public AccountWalletServiceImpl(AccountRepository accountRepository) {
+    public AccountWalletServiceImpl(AccountRepository accountRepository, UserRepository userRepository) {
         this.accountRepository = accountRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -53,8 +58,10 @@ public class AccountWalletServiceImpl implements AccountWalletService {
     }
 
     @Override
-    public void deposit(DepositRequest request) {
-        AccountWallet wallet = accountRepository.findByPixContaining(request.pix())
+    public void deposit(String email, DepositRequest request) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        AccountWallet wallet = accountRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada."));
 
         wallet.deposit(request.amount());
@@ -62,8 +69,10 @@ public class AccountWalletServiceImpl implements AccountWalletService {
     }
 
     @Override
-    public void withdraw(WithdrawRequest request) {
-        AccountWallet wallet = accountRepository.findByPixContaining(request.pix())
+    public void withdraw(String email, WithdrawRequest request) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        AccountWallet wallet = accountRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada."));
 
         wallet.withdraw(request.amount());
@@ -71,8 +80,10 @@ public class AccountWalletServiceImpl implements AccountWalletService {
     }
 
     @Override
-    public void transfer(TransferRequest request) {
-        AccountWallet source = accountRepository.findByPixContaining(request.fromPix())
+    public void transfer(String email, TransferRequest request) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        AccountWallet source = accountRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new AccountNotFoundException("Conta de origem não foi encontrada"));
         AccountWallet target = accountRepository.findByPixContaining(request.toPix())
                 .orElseThrow(() -> new AccountNotFoundException("Conta de destino não foi encontrada"));

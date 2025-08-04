@@ -1,10 +1,12 @@
 package br.com.bank.java_bank.domain.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -35,4 +37,10 @@ public class User {
     @NotBlank(message = "A senha não pode está em branco")
     @NotNull(message = "A senha não pode ser nula")
     private String password;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private AccountWallet accountWallet;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private InvestmentWallet investmentWallet;
 }
