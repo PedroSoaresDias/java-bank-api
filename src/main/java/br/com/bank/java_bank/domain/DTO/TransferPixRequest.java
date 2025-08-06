@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-public record TransferRequest(
+public record TransferPixRequest(
         @NotBlank(message = "A chave pix de origem não pode está em branco") 
         @NotNull(message = "A chave pix de origem não pode ser nula") 
         @NotEmpty(message = "A chave pix de origem não pode está vazia") 

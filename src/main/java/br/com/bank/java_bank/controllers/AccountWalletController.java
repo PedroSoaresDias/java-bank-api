@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import br.com.bank.java_bank.domain.DTO.AccountResponse;
 import br.com.bank.java_bank.domain.DTO.CreateAccountRequest;
 import br.com.bank.java_bank.domain.DTO.DepositRequest;
-import br.com.bank.java_bank.domain.DTO.TransferRequest;
+import br.com.bank.java_bank.domain.DTO.TransferPixRequest;
 import br.com.bank.java_bank.domain.DTO.WithdrawRequest;
 import br.com.bank.java_bank.services.AccountWalletService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -59,7 +59,7 @@ public class AccountWalletController {
     }
 
     @PostMapping("/transfer")
-    public ResponseEntity<Void> transfer(@Valid @RequestBody TransferRequest request) {
+    public ResponseEntity<Void> transfer(@Valid @RequestBody TransferPixRequest request) {
         service.transfer(request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

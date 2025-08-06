@@ -1,18 +1,17 @@
 package br.com.bank.java_bank.domain.model;
 
 import br.com.bank.java_bank.exceptions.NoFundsEnoughException;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-// import jakarta.validation.constraints.NotBlank;
-// import jakarta.validation.constraints.NotEmpty;
-// import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-// import jakarta.persistence.JoinColumn;
-// import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,10 +23,11 @@ public class InvestmentWallet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // @NotBlank(message = "A chave pix não pode está em branco")
-    // @NotNull(message = "A chave pix não pode ser nula")
-    // @NotEmpty(message = "A chave pix não pode está vazia")
-    // private String pix;
+    @Column(unique = true)
+    @NotBlank(message = "A chave pix não pode está em branco")
+    @NotNull(message = "A chave pix não pode ser nula")
+    @NotEmpty(message = "A chave pix não pode está vazia")
+    private String pix;
 
     @Positive(message = "O valor do saldo deve ser positivo")
     private long balance;
@@ -38,8 +38,8 @@ public class InvestmentWallet {
     @Positive(message = "O valor do depósito inicial deve ser positivo")
     private long initialDeposit;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     public void deposit(long amount) {

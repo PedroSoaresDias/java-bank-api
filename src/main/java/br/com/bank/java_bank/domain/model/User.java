@@ -9,7 +9,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -44,6 +43,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<AccountWallet> accountWallet;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private InvestmentWallet investmentWallet;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<InvestmentWallet> investmentWallet;
 }

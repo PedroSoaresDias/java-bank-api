@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccountWithInvestmentException.class)
     public ResponseEntity<ErrorResponse> handleAccountWithInvestment(AccountWithInvestmentException ex,
             HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.NOT_FOUND, ex, request);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex, request);
     }
 
     @ExceptionHandler(UserNotFoundException.class)

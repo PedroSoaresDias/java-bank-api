@@ -8,17 +8,19 @@ import org.springframework.stereotype.Service;
 import br.com.bank.java_bank.domain.DTO.AccountResponse;
 import br.com.bank.java_bank.domain.DTO.CreateAccountRequest;
 import br.com.bank.java_bank.domain.DTO.DepositRequest;
-import br.com.bank.java_bank.domain.DTO.TransferRequest;
+import br.com.bank.java_bank.domain.DTO.TransferPixRequest;
 import br.com.bank.java_bank.domain.DTO.WithdrawRequest;
 import br.com.bank.java_bank.domain.model.AccountWallet;
 import br.com.bank.java_bank.domain.model.User;
 import br.com.bank.java_bank.domain.repository.AccountRepository;
 import br.com.bank.java_bank.domain.repository.UserRepository;
 import br.com.bank.java_bank.exceptions.AccountNotFoundException;
+import br.com.bank.java_bank.exceptions.AccountWithInvestmentException;
 import br.com.bank.java_bank.exceptions.UnauthorizatedAccessException;
 import br.com.bank.java_bank.exceptions.UserNotFoundException;
 import br.com.bank.java_bank.services.AccountWalletService;
 import br.com.bank.java_bank.utils.SecurityUtil;
+import jakarta.transaction.Transactional;
 
 @Service
 public class AccountWalletServiceImpl implements AccountWalletService {
@@ -62,6 +64,11 @@ public class AccountWalletServiceImpl implements AccountWalletService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada."));
 
+        if (accountRepository.existsByPix(request.pix())) {
+            throw new AccountWithInvestmentException("Já existe uma conta de investimento com essa chave Pix.");
+        }
+
+
         AccountWallet wallet = new AccountWallet();
         wallet.setPix(request.pix());
         wallet.setBalance(request.balance());
@@ -72,6 +79,7 @@ public class AccountWalletServiceImpl implements AccountWalletService {
     }
 
     @Override
+    @Transactional
     public void deposit(DepositRequest request) {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
@@ -87,6 +95,7 @@ public class AccountWalletServiceImpl implements AccountWalletService {
     }
 
     @Override
+    @Transactional
     public void withdraw(WithdrawRequest request) {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
@@ -102,7 +111,8 @@ public class AccountWalletServiceImpl implements AccountWalletService {
     }
 
     @Override
-    public void transfer(TransferRequest request) {
+    @Transactional
+    public void transfer(TransferPixRequest request) {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
         AccountWallet source = accountRepository.findByPixContaining(request.fromPix())

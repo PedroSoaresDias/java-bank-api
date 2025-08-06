@@ -11,8 +11,8 @@ import br.com.bank.java_bank.domain.model.AccountWallet;
 @Repository
 public interface AccountRepository extends JpaRepository<AccountWallet, Long> {
     Optional<AccountWallet> findByPixContaining(String pix);
-
-    Optional<AccountWallet> findByUserId(Long userId);
     
     List<AccountWallet> findAccountsByUserId(Long userId);
+
+    boolean existsByPix(String pix);
 }

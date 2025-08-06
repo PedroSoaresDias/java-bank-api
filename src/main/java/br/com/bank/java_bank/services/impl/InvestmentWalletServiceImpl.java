@@ -6,21 +6,22 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import br.com.bank.java_bank.domain.DTO.CreateInvestmentWalletRequest;
-import br.com.bank.java_bank.domain.DTO.InvestmentDepositRequest;
 import br.com.bank.java_bank.domain.DTO.InvestmentResponse;
+import br.com.bank.java_bank.domain.DTO.TransferPixRequest;
 import br.com.bank.java_bank.domain.model.AccountWallet;
-// import br.com.bank.java_bank.domain.model.AccountWallet;
 import br.com.bank.java_bank.domain.model.InvestmentWallet;
 import br.com.bank.java_bank.domain.model.User;
 import br.com.bank.java_bank.domain.repository.AccountRepository;
 import br.com.bank.java_bank.domain.repository.InvestmentRepository;
 import br.com.bank.java_bank.domain.repository.UserRepository;
 import br.com.bank.java_bank.exceptions.AccountNotFoundException;
-// import br.com.bank.java_bank.exceptions.AccountNotFoundException;
-// import br.com.bank.java_bank.exceptions.AccountWithInvestmentException;
+import br.com.bank.java_bank.exceptions.AccountWithInvestmentException;
 import br.com.bank.java_bank.exceptions.InvestmentNotFoundException;
+import br.com.bank.java_bank.exceptions.UnauthorizatedAccessException;
 import br.com.bank.java_bank.exceptions.UserNotFoundException;
 import br.com.bank.java_bank.services.InvestmentWalletService;
+import br.com.bank.java_bank.utils.SecurityUtil;
+import jakarta.transaction.Transactional;
 
 @Service
 public class InvestmentWalletServiceImpl implements InvestmentWalletService {
@@ -29,15 +30,20 @@ public class InvestmentWalletServiceImpl implements InvestmentWalletService {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
 
-    public InvestmentWalletServiceImpl(InvestmentRepository investmentRepository, AccountRepository accountRepository, UserRepository userRepository) {
+    public InvestmentWalletServiceImpl(InvestmentRepository investmentRepository, AccountRepository accountRepository,
+            UserRepository userRepository) {
         this.investmentRepository = investmentRepository;
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
     }
 
     @Override
-    public List<InvestmentResponse> findAllInvestments() {
-        List<InvestmentWallet> wallets = investmentRepository.findAll();
+    public List<InvestmentResponse> findAllMyInvestments() {
+        Long userId = SecurityUtil.getAuthenticatedUserId();
+
+        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+
+        List<InvestmentWallet> wallets = investmentRepository.findAllByUserId(userId);
         List<InvestmentResponse> response = wallets.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
@@ -46,8 +52,11 @@ public class InvestmentWalletServiceImpl implements InvestmentWalletService {
     }
 
     @Override
-    public InvestmentResponse findInvestmentById(Long id) {
-        InvestmentWallet wallet = investmentRepository.findById(id)
+    public InvestmentResponse findInvestmentByPix(String pix) {
+        Long userId = SecurityUtil.getAuthenticatedUserId();
+
+        InvestmentWallet wallet = investmentRepository.findByPixContaining(pix)
+                .filter(w -> w.getUser().getId().equals(userId))
                 .orElseThrow(() -> new InvestmentNotFoundException("Investimento não encontrado"));
         InvestmentResponse response = toDTO(wallet);
         return response;
@@ -55,48 +64,66 @@ public class InvestmentWalletServiceImpl implements InvestmentWalletService {
 
     @Override
     public InvestmentWallet create(CreateInvestmentWalletRequest request) {
-        // InvestmentWallet wallet = investmentRepository.findByPixContaining(request.pix())
-        //         .orElseThrow(() -> new AccountWithInvestmentException("Conta não encontrada"));
+        Long userId = SecurityUtil.getAuthenticatedUserId();
 
-        // if (investmentRepository.findByAccount(account).isPresent()) {
-        //     throw new AccountWithInvestmentException("Conta já possui uma carteira de investimento");
-        // }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+
+        if (investmentRepository.existsByPix(request.pix())) {
+            throw new AccountWithInvestmentException("Já existe uma conta de investimento com essa chave Pix.");
+        }
 
         InvestmentWallet wallet = new InvestmentWallet();
-        // wallet.setWallet(account);
-        // wallet.setPix(request.pix());
+        wallet.setPix(request.pix());
         wallet.setBalance(request.amount());
         wallet.setInitialDeposit(request.amount());
         wallet.setTax(request.tax());
+        wallet.setUser(user);
 
         return investmentRepository.save(wallet);
     }
- 
+
     @Override
-    public void invest(String email, InvestmentDepositRequest request) {
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-        AccountWallet account = accountRepository.findByUserId(user.getId())
+    @Transactional
+    public void invest(TransferPixRequest request) {
+        Long userId = SecurityUtil.getAuthenticatedUserId();
+
+        AccountWallet account = accountRepository.findByPixContaining(request.fromPix())
+                .filter(a -> a.getUser().getId().equals(userId))
                 .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada"));
-        InvestmentWallet investment = investmentRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new InvestmentNotFoundException("Carteira de investimento não encontrada"));
-        
+        InvestmentWallet investment = investmentRepository.findByPixContaining(request.toPix())
+                .filter(i -> i.getUser().getId().equals(userId))
+                .orElseThrow(() -> new InvestmentNotFoundException(
+                        "Carteira de investimento não encontrada ou não pertence ao usuário."));
+
+        if (!investment.getUser().getId().equals(userId)) {
+            throw new UnauthorizatedAccessException("Você não tem permissão para investir nesta conta.");
+        }
+
         account.withdraw(request.amount());
         investment.deposit(request.amount());
 
         accountRepository.save(account);
         investmentRepository.save(investment);
     }
-    
+
     @Override
-    public void withdraw(String email, InvestmentDepositRequest request) {
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-        AccountWallet account = accountRepository.findByUserId(user.getId())
+    @Transactional
+    public void withdraw(TransferPixRequest request) {
+        Long userId = SecurityUtil.getAuthenticatedUserId();
+
+        InvestmentWallet investment = investmentRepository.findByPixContaining(request.fromPix())
+                .filter(i -> i.getUser().getId().equals(userId))
+                .orElseThrow(() -> new InvestmentNotFoundException(
+                        "Carteira de investimento não encontrada ou não pertence ao usuário."));
+        AccountWallet account = accountRepository.findByPixContaining(request.toPix())
+                .filter(a -> a.getUser().getId().equals(userId))
                 .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada"));
-        InvestmentWallet investment = investmentRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new InvestmentNotFoundException("Carteira de investimento não encontrada"));
-        
+
+        if (!investment.getUser().getId().equals(userId)) {
+            throw new UnauthorizatedAccessException("Você não tem permissão para resgatar o investimento nesta conta.");
+        }
+
         investment.withdraw(request.amount());
         account.deposit(request.amount());
 
@@ -106,6 +133,11 @@ public class InvestmentWalletServiceImpl implements InvestmentWalletService {
 
     @Override
     public void updateYield() {
+        Long userId = SecurityUtil.getAuthenticatedUserId();
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
+
         List<InvestmentWallet> wallets = investmentRepository.findAll();
         for (InvestmentWallet wallet : wallets) {
             wallet.updateYield();
