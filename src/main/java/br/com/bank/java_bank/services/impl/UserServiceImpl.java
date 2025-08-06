@@ -3,6 +3,7 @@ package br.com.bank.java_bank.services.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import br.com.bank.java_bank.domain.DTO.CreateUserRequest;
@@ -15,9 +16,11 @@ import br.com.bank.java_bank.services.UserService;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -43,7 +46,7 @@ public class UserServiceImpl implements UserService {
 
         user.setName(request.name());
         user.setEmail(request.email());
-        user.setPassword(request.password());
+        user.setPassword(passwordEncoder.encode(request.password()));
 
         userRepository.save(user);
     }
@@ -54,7 +57,10 @@ public class UserServiceImpl implements UserService {
 
         user.setName(request.name());
         user.setEmail(request.email());
-        user.setPassword(request.password());
+
+        if (request.password() != null) {
+            user.setPassword(passwordEncoder.encode(request.password()));
+        }
 
         userRepository.save(user);
     }
