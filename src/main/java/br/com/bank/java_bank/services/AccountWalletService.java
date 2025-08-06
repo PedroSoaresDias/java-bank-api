@@ -9,15 +9,15 @@ import br.com.bank.java_bank.domain.DTO.TransferRequest;
 import br.com.bank.java_bank.domain.DTO.WithdrawRequest;
 
 public interface AccountWalletService {
-    List<AccountResponse> getAllAccounts();
+    List<AccountResponse> getAllMyAccounts();
     
     AccountResponse getAccountByPix(String pix);
 
     AccountResponse createAccount(CreateAccountRequest request);
 
-    void deposit(String email, DepositRequest request);
+    void deposit(DepositRequest request);
 
-    void withdraw(String email, WithdrawRequest request);
+    void withdraw(WithdrawRequest request);
 
-    void transfer(String email, TransferRequest request);
+    void transfer(TransferRequest request);
 }

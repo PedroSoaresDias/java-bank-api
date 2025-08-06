@@ -1,6 +1,5 @@
 package br.com.bank.java_bank.services.impl;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -38,14 +37,5 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtGenerator.generateToken(user.getId());
         return new AuthResponse(token);
     }
-    
-    public Long getAuthenticatedUserId() {
-    var auth = SecurityContextHolder.getContext().getAuthentication();
-    if (auth != null && auth.isAuthenticated()) {
-        String userId = auth.getName();
-        return Long.parseLong(userId);
-    }
-    return null;
-}
 
 }

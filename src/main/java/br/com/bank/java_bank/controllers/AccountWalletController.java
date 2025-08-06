@@ -1,6 +1,5 @@
 package br.com.bank.java_bank.controllers;
 
-import java.security.Principal;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -33,7 +32,7 @@ public class AccountWalletController {
 
     @GetMapping
     public ResponseEntity<List<AccountResponse>> getAllAccounts() {
-        return ResponseEntity.ok(service.getAllAccounts());
+        return ResponseEntity.ok(service.getAllMyAccounts());
     }
 
     @GetMapping("/{pix}")
@@ -48,20 +47,20 @@ public class AccountWalletController {
     }
 
     @PostMapping("/deposit")
-    public ResponseEntity<Void> deposit(@Valid @RequestBody DepositRequest request, Principal principal) {
-        service.deposit(principal.getName(), request);
+    public ResponseEntity<Void> deposit(@Valid @RequestBody DepositRequest request) {
+        service.deposit(request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<Void> withdraw(@Valid @RequestBody WithdrawRequest request, Principal principal) {
-        service.withdraw(principal.getName(), request);
+    public ResponseEntity<Void> withdraw(@Valid @RequestBody WithdrawRequest request) {
+        service.withdraw(request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/transfer")
-    public ResponseEntity<Void> transfer(@Valid @RequestBody TransferRequest request, Principal principal) {
-        service.transfer(principal.getName(), request);
+    public ResponseEntity<Void> transfer(@Valid @RequestBody TransferRequest request) {
+        service.transfer(request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

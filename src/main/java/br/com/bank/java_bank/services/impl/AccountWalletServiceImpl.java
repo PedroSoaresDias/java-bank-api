@@ -17,6 +17,7 @@ import br.com.bank.java_bank.domain.repository.UserRepository;
 import br.com.bank.java_bank.exceptions.AccountNotFoundException;
 import br.com.bank.java_bank.exceptions.UserNotFoundException;
 import br.com.bank.java_bank.services.AccountWalletService;
+import br.com.bank.java_bank.utils.SecurityUtil;
 
 @Service
 public class AccountWalletServiceImpl implements AccountWalletService {
@@ -30,8 +31,11 @@ public class AccountWalletServiceImpl implements AccountWalletService {
     }
 
     @Override
-    public List<AccountResponse> getAllAccounts() {
-        List<AccountWallet> wallets = accountRepository.findAll();
+    public List<AccountResponse> getAllMyAccounts() {
+        Long userId = SecurityUtil.getAuthenticatedUserId();
+
+        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        List<AccountWallet> wallets = accountRepository.findAccountsByUserId(userId);
         List<AccountResponse> response = wallets.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -41,7 +45,10 @@ public class AccountWalletServiceImpl implements AccountWalletService {
 
     @Override
     public AccountResponse getAccountByPix(String pix) {
+        Long userId = SecurityUtil.getAuthenticatedUserId();
+
         AccountWallet wallet = accountRepository.findByPixContaining(pix)
+        .filter(w -> w.getUser().getId().equals(userId))
                 .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada."));
         AccountResponse account = convertToDTO(wallet);
         return account;
@@ -49,19 +56,25 @@ public class AccountWalletServiceImpl implements AccountWalletService {
 
     @Override
     public AccountResponse createAccount(CreateAccountRequest request) {
+        Long userId = SecurityUtil.getAuthenticatedUserId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada."));
+
         AccountWallet wallet = new AccountWallet();
         wallet.setPix(request.pix());
         wallet.setBalance(request.balance());
+        wallet.setUser(user);
 
         AccountWallet walletSaved = accountRepository.save(wallet);
         return convertToDTO(walletSaved);
     }
 
     @Override
-    public void deposit(String email, DepositRequest request) {
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-        AccountWallet wallet = accountRepository.findByUserId(user.getId())
+    public void deposit(DepositRequest request) {
+        Long userId = SecurityUtil.getAuthenticatedUserId();
+
+        AccountWallet wallet = accountRepository.findByUserId(userId)
                 .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada."));
 
         wallet.deposit(request.amount());
@@ -69,10 +82,10 @@ public class AccountWalletServiceImpl implements AccountWalletService {
     }
 
     @Override
-    public void withdraw(String email, WithdrawRequest request) {
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-        AccountWallet wallet = accountRepository.findByUserId(user.getId())
+    public void withdraw(WithdrawRequest request) {
+        Long userId = SecurityUtil.getAuthenticatedUserId();
+        
+        AccountWallet wallet = accountRepository.findByUserId(userId)
                 .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada."));
 
         wallet.withdraw(request.amount());
@@ -80,10 +93,10 @@ public class AccountWalletServiceImpl implements AccountWalletService {
     }
 
     @Override
-    public void transfer(String email, TransferRequest request) {
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-        AccountWallet source = accountRepository.findByUserId(user.getId())
+    public void transfer(TransferRequest request) {
+        Long userId = SecurityUtil.getAuthenticatedUserId();
+
+        AccountWallet source = accountRepository.findByUserId(userId)
                 .orElseThrow(() -> new AccountNotFoundException("Conta de origem não foi encontrada"));
         AccountWallet target = accountRepository.findByPixContaining(request.toPix())
                 .orElseThrow(() -> new AccountNotFoundException("Conta de destino não foi encontrada"));

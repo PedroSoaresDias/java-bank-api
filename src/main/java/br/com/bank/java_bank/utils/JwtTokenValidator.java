@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -12,11 +13,13 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
+
 @Component
 public class JwtTokenValidator {
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenValidator.class);
 
-    private String secret = "1234abc";
+    @Value("${jwt.secret}")
+    private String secret;
 
     public boolean validateToken(String token, UserDetails userDetails) {
         try {
