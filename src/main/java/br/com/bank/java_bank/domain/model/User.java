@@ -1,11 +1,14 @@
 package br.com.bank.java_bank.domain.model;
 
+import java.util.List;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -38,8 +41,8 @@ public class User {
     @NotNull(message = "A senha não pode ser nula")
     private String password;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private AccountWallet accountWallet;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<AccountWallet> accountWallet;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private InvestmentWallet investmentWallet;

@@ -6,7 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -23,7 +23,7 @@ public class AccountWallet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     @NotBlank(message = "A chave pix não pode está em branco")
     @NotNull(message = "A chave pix não pode ser nula")
     @NotEmpty(message = "A chave pix não pode está vazia")
@@ -32,8 +32,8 @@ public class AccountWallet {
     @Positive(message = "O valor do saldo deve ser positivo")
     private long balance;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     public void deposit(long amount) {

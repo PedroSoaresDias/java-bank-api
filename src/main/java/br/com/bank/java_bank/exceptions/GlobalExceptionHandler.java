@@ -25,6 +25,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex, request);
     }
 
+    @ExceptionHandler(UnauthorizatedAccessException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizatedAccess(UnauthorizatedAccessException ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex, request);
+    }
+
     @ExceptionHandler(AccountNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleAccountNotFound(AccountNotFoundException ex,
             HttpServletRequest request) {
