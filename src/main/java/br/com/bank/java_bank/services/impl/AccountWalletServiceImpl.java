@@ -65,7 +65,7 @@ public class AccountWalletServiceImpl implements AccountWalletService {
                 .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada."));
 
         if (accountRepository.existsByPix(request.pix())) {
-            throw new AccountWithInvestmentException("Já existe uma conta de investimento com essa chave Pix.");
+            throw new AccountWithInvestmentException("Já existe uma conta corrente com essa chave Pix.");
         }
 
 

@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.bank.java_bank.domain.DTO.CreateUserRequest;
 import br.com.bank.java_bank.domain.DTO.UserResponse;
 import br.com.bank.java_bank.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
@@ -29,28 +32,51 @@ public class UserController {
         this.userService = userService;
     }
 
+    @Operation(summary = "Buscar os dados de todos os usuários")
+    @ApiResponse(responseCode = "200", description = "Todos os usuários")
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    @Operation(summary = "Buscar os dados de um usuário pelo Id")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Usuário encontrado"),
+        @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@Valid @PathVariable("id") Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
+    @Operation(summary = "Criar um usuário")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Falha ao criar um usuário")
+    })
     @PostMapping
     public ResponseEntity<Void> createUser(@Valid @RequestBody CreateUserRequest request) {
         userService.createUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @Operation(summary = "Atualizar um usuário definido pelo Id")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Usuário atualizado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Falha ao atualizar um usuário"),
+        @ApiResponse(responseCode = "404", description = "Usuário não encontrado")    
+    })
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateUser(@PathVariable("id") Long id, @Valid @RequestBody CreateUserRequest request) {
         userService.updateUser(id, request);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    @Operation(summary = "Excluir um usuário definido pelo Id")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Usuário deletado com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Usuário não encontrado")    
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@Valid @PathVariable("id") Long id) {
         userService.deleteUser(id);

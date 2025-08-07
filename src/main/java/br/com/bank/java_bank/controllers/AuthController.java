@@ -9,9 +9,15 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.bank.java_bank.domain.DTO.AuthRequest;
 import br.com.bank.java_bank.domain.DTO.AuthResponse;
 import br.com.bank.java_bank.services.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Módulo de Autenticação", description = "Gerencia a autenticação dos usuários")
+
 public class AuthController {
     private final AuthService authService;
 
@@ -19,6 +25,11 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @Operation(summary = "Realizar o login com as credenciais do usuário")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
+        @ApiResponse(responseCode = "401", description = "Credenciais inválidas")
+    })
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
         AuthResponse response = authService.authenticate(request);
