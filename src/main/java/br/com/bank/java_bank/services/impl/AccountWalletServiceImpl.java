@@ -17,7 +17,6 @@ import br.com.bank.java_bank.domain.repository.UserRepository;
 import br.com.bank.java_bank.exceptions.AccountNotFoundException;
 import br.com.bank.java_bank.exceptions.AccountWithInvestmentException;
 import br.com.bank.java_bank.exceptions.UnauthorizatedAccessException;
-import br.com.bank.java_bank.exceptions.UserNotFoundException;
 import br.com.bank.java_bank.services.AccountWalletService;
 import br.com.bank.java_bank.utils.SecurityUtil;
 import jakarta.transaction.Transactional;
@@ -37,7 +36,7 @@ public class AccountWalletServiceImpl implements AccountWalletService {
     public List<AccountResponse> getAllMyAccounts() {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
-        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        userRepository.findById(userId).orElseThrow(() -> new UnauthorizatedAccessException("Você não tem permissão para acessar essa conta."));
         List<AccountWallet> wallets = accountRepository.findAccountsByUserId(userId);
         List<AccountResponse> response = wallets.stream()
                 .map(this::convertToDTO)
@@ -53,6 +52,11 @@ public class AccountWalletServiceImpl implements AccountWalletService {
         AccountWallet wallet = accountRepository.findByPixContaining(pix)
                 .filter(w -> w.getUser().getId().equals(userId))
                 .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada."));
+
+        if (!wallet.getUser().getId().equals(userId)) {
+            throw new UnauthorizatedAccessException("Você não tem permissão para acessar essa conta.");
+        }
+
         AccountResponse account = convertToDTO(wallet);
         return account;
     }
@@ -121,7 +125,7 @@ public class AccountWalletServiceImpl implements AccountWalletService {
                 .orElseThrow(() -> new AccountNotFoundException("Conta de destino não foi encontrada"));
 
         if (!source.getUser().getId().equals(userId)) {
-            throw new UnauthorizatedAccessException("Você não tem permissão para fazer transferencia entre contas.");
+            throw new UnauthorizatedAccessException("Você não tem permissão para fazer transferência entre contas.");
         }
 
         source.withdraw(request.amount());

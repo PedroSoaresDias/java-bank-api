@@ -30,7 +30,9 @@ public class InvestmentWalletServiceImpl implements InvestmentWalletService {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
 
-    public InvestmentWalletServiceImpl(InvestmentRepository investmentRepository, AccountRepository accountRepository,
+    public InvestmentWalletServiceImpl(
+            InvestmentRepository investmentRepository,
+            AccountRepository accountRepository,
             UserRepository userRepository) {
         this.investmentRepository = investmentRepository;
         this.accountRepository = accountRepository;
@@ -41,7 +43,8 @@ public class InvestmentWalletServiceImpl implements InvestmentWalletService {
     public List<InvestmentResponse> findAllMyInvestments() {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
-        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        userRepository.findById(userId).orElseThrow(
+                () -> new UnauthorizatedAccessException("Você não tem permissão para acessar essas contas."));
 
         List<InvestmentWallet> wallets = investmentRepository.findAllByUserId(userId);
         List<InvestmentResponse> response = wallets.stream()
@@ -58,6 +61,11 @@ public class InvestmentWalletServiceImpl implements InvestmentWalletService {
         InvestmentWallet wallet = investmentRepository.findByPixContaining(pix)
                 .filter(w -> w.getUser().getId().equals(userId))
                 .orElseThrow(() -> new InvestmentNotFoundException("Investimento não encontrado"));
+
+        if (!wallet.getUser().getId().equals(userId)) {
+            throw new UnauthorizatedAccessException("Você não tem permissão para acessar essa conta.");
+        }
+
         InvestmentResponse response = toDTO(wallet);
         return response;
     }
@@ -136,7 +144,7 @@ public class InvestmentWalletServiceImpl implements InvestmentWalletService {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
         userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
+                .orElseThrow(() -> new UnauthorizatedAccessException("Você não tem permissão para acessar essa conta."));
 
         List<InvestmentWallet> wallets = investmentRepository.findAll();
         for (InvestmentWallet wallet : wallets) {
@@ -147,6 +155,6 @@ public class InvestmentWalletServiceImpl implements InvestmentWalletService {
     }
 
     private InvestmentResponse toDTO(InvestmentWallet wallet) {
-        return new InvestmentResponse(wallet.getId(), wallet.getBalance(), wallet.getTax());
+        return new InvestmentResponse(wallet.getId(), wallet.getPix(), wallet.getBalance(), wallet.getTax());
     }
 }
