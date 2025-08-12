@@ -44,6 +44,10 @@ tasks.withType<Test> {
 	useJUnitPlatform()
 }
 
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    layered {}
+}
+
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-parameters")
 }
