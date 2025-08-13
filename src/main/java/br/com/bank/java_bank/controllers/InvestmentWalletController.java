@@ -1,26 +1,25 @@
 package br.com.bank.java_bank.controllers;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.bank.java_bank.domain.DTO.CreateInvestmentWalletRequest;
 import br.com.bank.java_bank.domain.DTO.InvestmentResponse;
 import br.com.bank.java_bank.domain.DTO.TransferPixRequest;
-import br.com.bank.java_bank.domain.model.InvestmentWallet;
 import br.com.bank.java_bank.services.InvestmentWalletService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/investments")
@@ -38,8 +37,8 @@ public class InvestmentWalletController {
         @ApiResponse(responseCode = "403", description = "O usuário não tem permissão de acessar as contas")    
     })
     @GetMapping
-    public ResponseEntity<List<InvestmentResponse>> findAllInvestments() {
-        return ResponseEntity.ok(service.findAllMyInvestments());
+    public Flux<InvestmentResponse> findAllInvestments() {
+        return service.findAllMyInvestments();
     }
 
     @Operation(summary = "Buscar a conta de investimento do usuário autenticado com a chave Pix")
@@ -49,8 +48,8 @@ public class InvestmentWalletController {
         @ApiResponse(responseCode = "404", description = "Conta de investimento não encontrada")    
     })
     @GetMapping("/{pix}")
-    public ResponseEntity<InvestmentResponse> findInvestmentByPix(@Valid @PathVariable("pix") String pix) {
-        return ResponseEntity.ok(service.findInvestmentByPix(pix));
+    public Mono<InvestmentResponse> findInvestmentByPix(@Valid @PathVariable("pix") String pix) {
+        return service.findInvestmentByPix(pix);
     }
 
     @Operation(summary = "Criar uma conta de investimento com o usuário autenticado")
@@ -60,9 +59,9 @@ public class InvestmentWalletController {
         @ApiResponse(responseCode = "403", description = "O usuário não tem permissão de criar uma conta")
     })
     @PostMapping
-    public ResponseEntity<InvestmentWallet> create(@Valid @RequestBody CreateInvestmentWalletRequest request) {
-        service.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<Void> create(@Valid @RequestBody CreateInvestmentWalletRequest request) {
+        return service.create(request);
     }
 
     @Operation(summary = "Fazer um investimento para a conta de investimento com o usuário autenticado")
@@ -74,9 +73,9 @@ public class InvestmentWalletController {
         @ApiResponse(responseCode = "404", description = "Conta de destino não encontrada"),
     })
     @PostMapping("/invest")
-    public ResponseEntity<Void> invest(@Valid @RequestBody TransferPixRequest request) {
-        service.invest(request);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> invest(@Valid @RequestBody TransferPixRequest request) {
+        return service.invest(request);
     }
 
     @Operation(summary = "Fazer um resgate do investimento para a conta corrente com o usuário autenticado")
@@ -88,9 +87,9 @@ public class InvestmentWalletController {
         @ApiResponse(responseCode = "404", description = "Conta de destino não encontrada"),
     })
     @PostMapping("/withdraw")
-    public ResponseEntity<Void> withdraw(@Valid @RequestBody TransferPixRequest request) {
-        service.withdraw(request);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> withdraw(@Valid @RequestBody TransferPixRequest request) {
+        return service.withdraw(request);
     }
     
     @Operation(summary = "Atualizar os rendimentos dos investimentos com o usuário autenticado")
@@ -99,8 +98,8 @@ public class InvestmentWalletController {
         @ApiResponse(responseCode = "403", description = "O usuário não tem permissão de atualizar os investimentos essa conta")
     })
     @PostMapping("/yield/update")
-    public ResponseEntity<Void> updateYield() {
-        service.updateYield();
-        return ResponseEntity.ok().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> updateYield() {
+        return service.updateYield();
     }
 }

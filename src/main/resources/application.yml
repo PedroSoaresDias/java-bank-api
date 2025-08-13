@@ -5,18 +5,16 @@ spring:
   threads:
     virtual:
       enabled: true
-  datasource:
-    url: jdbc:h2:mem:java-bank
+  r2dbc:
+    url: r2dbc:h2:mem:///java-bank;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: bank
     password:
-  jpa:
-    show-sql: true
-    open-in-view: false
-    hibernate:
-      dll-auto: create
-    properties:
-      hibernate:
-        format_sql: true
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+
   h2:
     console:
       enabled: true

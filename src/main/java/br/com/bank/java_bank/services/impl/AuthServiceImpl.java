@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 
 import br.com.bank.java_bank.domain.DTO.AuthRequest;
 import br.com.bank.java_bank.domain.DTO.AuthResponse;
-import br.com.bank.java_bank.domain.model.User;
 import br.com.bank.java_bank.services.AuthService;
 import br.com.bank.java_bank.domain.repository.UserRepository;
 import br.com.bank.java_bank.exceptions.AuthenticationException;
 import br.com.bank.java_bank.utils.JwtTokenGenerator;
+import reactor.core.publisher.Mono;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -19,23 +19,34 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenGenerator jwtGenerator;
 
-    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtTokenGenerator jwtGenerator) {
+    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            JwtTokenGenerator jwtGenerator) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtGenerator = jwtGenerator;
     }
 
     @Override
-    public AuthResponse authenticate(AuthRequest request) {
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
+    public Mono<AuthResponse> authenticate(AuthRequest request) {
+        return userRepository.findByEmail(request.email())
+                .switchIfEmpty(Mono.error(new UsernameNotFoundException("Usuário não encontrado.")))
+                .flatMap(user -> {
+                    if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+                        throw new AuthenticationException("Credenciais inválidas");
+                    }
 
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new AuthenticationException("Credenciais inválidas");
-        }
+                    String token = jwtGenerator.generateToken(user.getId());
+                    return Mono.just(new AuthResponse(token));
+                });
+        // User user = userRepository.findByEmail(request.email())
+        // .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
 
-        String token = jwtGenerator.generateToken(user.getId());
-        return new AuthResponse(token);
+        // if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+        // throw new AuthenticationException("Credenciais inválidas");
+        // }
+
+        // String token = jwtGenerator.generateToken(user.getId());
+        // return new AuthResponse(token);
     }
 
 }

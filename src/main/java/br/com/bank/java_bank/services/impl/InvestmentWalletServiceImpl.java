@@ -1,8 +1,5 @@
 package br.com.bank.java_bank.services.impl;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
 
 import br.com.bank.java_bank.domain.DTO.CreateInvestmentWalletRequest;
@@ -10,7 +7,6 @@ import br.com.bank.java_bank.domain.DTO.InvestmentResponse;
 import br.com.bank.java_bank.domain.DTO.TransferPixRequest;
 import br.com.bank.java_bank.domain.model.AccountWallet;
 import br.com.bank.java_bank.domain.model.InvestmentWallet;
-import br.com.bank.java_bank.domain.model.User;
 import br.com.bank.java_bank.domain.repository.AccountRepository;
 import br.com.bank.java_bank.domain.repository.InvestmentRepository;
 import br.com.bank.java_bank.domain.repository.UserRepository;
@@ -21,7 +17,8 @@ import br.com.bank.java_bank.exceptions.UnauthorizatedAccessException;
 import br.com.bank.java_bank.exceptions.UserNotFoundException;
 import br.com.bank.java_bank.services.InvestmentWalletService;
 import br.com.bank.java_bank.utils.SecurityUtil;
-import jakarta.transaction.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 public class InvestmentWalletServiceImpl implements InvestmentWalletService {
@@ -40,118 +37,144 @@ public class InvestmentWalletServiceImpl implements InvestmentWalletService {
     }
 
     @Override
-    public List<InvestmentResponse> findAllMyInvestments() {
+    public Flux<InvestmentResponse> findAllMyInvestments() {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
-        userRepository.findById(userId).orElseThrow(
-                () -> new UnauthorizatedAccessException("Você não tem permissão para acessar essas contas."));
-
-        List<InvestmentWallet> wallets = investmentRepository.findAllByUserId(userId);
-        List<InvestmentResponse> response = wallets.stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
-
-        return response;
+        return investmentRepository.findAllByUserId(userId)
+                .filter(w -> w.getUserId().equals(userId))
+                .switchIfEmpty(Mono
+                        .error(new UnauthorizatedAccessException("Você não tem permissão para acessar essa conta.")))
+                .map(this::toDTO);
     }
 
     @Override
-    public InvestmentResponse findInvestmentByPix(String pix) {
+    public Mono<InvestmentResponse> findInvestmentByPix(String pix) {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
-        InvestmentWallet wallet = investmentRepository.findByPixContaining(pix)
-                .filter(w -> w.getUser().getId().equals(userId))
-                .orElseThrow(() -> new InvestmentNotFoundException("Investimento não encontrado"));
-
-        if (!wallet.getUser().getId().equals(userId)) {
-            throw new UnauthorizatedAccessException("Você não tem permissão para acessar essa conta.");
-        }
-
-        InvestmentResponse response = toDTO(wallet);
-        return response;
+        return investmentRepository.findByPixContaining(pix)
+                .filter(wallet -> wallet.getUserId().equals(userId))
+                .switchIfEmpty(Mono.error(new InvestmentNotFoundException("Conta de investimentos não encontrada.")))
+                .map(this::toDTO);
     }
 
     @Override
-    public InvestmentWallet create(CreateInvestmentWalletRequest request) {
+    public Mono<Void> create(CreateInvestmentWalletRequest request) {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
+        return userRepository.findById(userId)
+                .switchIfEmpty(Mono.error(new UserNotFoundException("Conta não encontrada.")))
+                .flatMap(user -> {
+                    // if (investmentRepository.existsByPix(request.pix())) {
+                    // throw new AccountWithInvestmentException("Já existe uma conta corrente com
+                    // essa chave Pix.");
+                    // }
 
-        if (investmentRepository.existsByPix(request.pix())) {
-            throw new AccountWithInvestmentException("Já existe uma conta de investimento com essa chave Pix.");
-        }
+                    investmentRepository.existsByPix(request.pix())
+                            .flatMap(exists -> {
+                                if (exists) {
+                                    return Mono.error(new AccountWithInvestmentException(
+                                            "Já existe uma conta corrente com essa chave Pix."));
+                                }
 
-        InvestmentWallet wallet = new InvestmentWallet();
-        wallet.setPix(request.pix());
-        wallet.setBalance(request.amount());
-        wallet.setInitialDeposit(request.amount());
-        wallet.setTax(request.tax());
-        wallet.setUser(user);
-
-        return investmentRepository.save(wallet);
+                                return Mono.empty();
+                            });
+                    InvestmentWallet wallet = new InvestmentWallet();
+                    wallet.setPix(request.pix());
+                    wallet.setTax(request.tax());
+                    wallet.setBalance(request.amount());
+                    wallet.setInitialDeposit(request.amount());
+                    wallet.setUserId(userId);
+                    return investmentRepository.save(wallet).then();
+                });
     }
 
     @Override
-    @Transactional
-    public void invest(TransferPixRequest request) {
+    public Mono<Void> invest(TransferPixRequest request) {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
-        AccountWallet account = accountRepository.findByPixContaining(request.fromPix())
-                .filter(a -> a.getUser().getId().equals(userId))
-                .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada"));
-        InvestmentWallet investment = investmentRepository.findByPixContaining(request.toPix())
-                .filter(i -> i.getUser().getId().equals(userId))
-                .orElseThrow(() -> new InvestmentNotFoundException(
-                        "Carteira de investimento não encontrada ou não pertence ao usuário."));
+        Mono<AccountWallet> accountMono = accountRepository.findByPixContaining(request.fromPix())
+                .filter(w -> w.getUserId().equals(userId))
+                .switchIfEmpty(Mono.error(new AccountNotFoundException("Conta de origem não foi encontrada")));
+        Mono<InvestmentWallet> investmentMono = investmentRepository.findByPixContaining(request.toPix())
+                .filter(i -> i.getUserId().equals(userId))
+                .switchIfEmpty(Mono.error(new InvestmentNotFoundException(
+                        "Carteira de investimento não encontrada ou não pertence ao usuário.")));
 
-        if (!investment.getUser().getId().equals(userId)) {
-            throw new UnauthorizatedAccessException("Você não tem permissão para investir nesta conta.");
-        }
+        return Mono.zip(accountMono, investmentMono)
+                .flatMap(tuple -> {
+                    AccountWallet account = tuple.getT1();
+                    InvestmentWallet investment = tuple.getT2();
 
-        account.withdraw(request.amount());
-        investment.deposit(request.amount());
+                    if (!investment.getUserId().equals(userId)) {
+                        throw new UnauthorizatedAccessException("Você não tem permissão para investir nesta conta.");
+                    }
 
-        accountRepository.save(account);
-        investmentRepository.save(investment);
+                    account.withdraw(request.amount());
+                    investment.deposit(request.amount());
+
+                    return accountRepository.save(account)
+                            .then(investmentRepository.save(investment))
+                            .then();
+                });
     }
 
     @Override
-    @Transactional
-    public void withdraw(TransferPixRequest request) {
+    public Mono<Void> withdraw(TransferPixRequest request) {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
-        InvestmentWallet investment = investmentRepository.findByPixContaining(request.fromPix())
-                .filter(i -> i.getUser().getId().equals(userId))
-                .orElseThrow(() -> new InvestmentNotFoundException(
-                        "Carteira de investimento não encontrada ou não pertence ao usuário."));
-        AccountWallet account = accountRepository.findByPixContaining(request.toPix())
-                .filter(a -> a.getUser().getId().equals(userId))
-                .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada"));
+        Mono<AccountWallet> accountMono = accountRepository.findByPixContaining(request.fromPix())
+                .filter(w -> w.getUserId().equals(userId))
+                .switchIfEmpty(Mono.error(new AccountNotFoundException("Conta de origem não foi encontrada")));
+        Mono<InvestmentWallet> investmentMono = investmentRepository.findByPixContaining(request.toPix())
+                .filter(i -> i.getUserId().equals(userId))
+                .switchIfEmpty(Mono.error(new InvestmentNotFoundException(
+                        "Carteira de investimento não encontrada ou não pertence ao usuário.")));
 
-        if (!investment.getUser().getId().equals(userId)) {
-            throw new UnauthorizatedAccessException("Você não tem permissão para resgatar o investimento nesta conta.");
-        }
+        return Mono.zip(accountMono, investmentMono)
+                .flatMap(tuple -> {
+                    AccountWallet account = tuple.getT1();
+                    InvestmentWallet investment = tuple.getT2();
 
-        investment.withdraw(request.amount());
-        account.deposit(request.amount());
+                    if (!investment.getUserId().equals(userId)) {
+                        throw new UnauthorizatedAccessException(
+                                "Você não tem permissão para resgatar o investimento nesta conta.");
+                    }
 
-        investmentRepository.save(investment);
-        accountRepository.save(account);
+                    investment.withdraw(request.amount());
+                    account.deposit(request.amount());
+
+                    return investmentRepository.save(investment)
+                            .then(accountRepository.save(account))
+                            .then();
+                });
     }
 
     @Override
-    public void updateYield() {
+    public Mono<Void> updateYield() {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
-        userRepository.findById(userId)
-                .orElseThrow(() -> new UnauthorizatedAccessException("Você não tem permissão para acessar essa conta."));
+        return investmentRepository.findAllByUserId(userId)
+                .filter(w -> w.getUserId().equals(userId))
+                .switchIfEmpty(Mono
+                        .error(new UnauthorizatedAccessException("Você não tem permissão para acessar essa conta.")))
+                .map(wallet -> {
+                    wallet.updateYield();
+                    return wallet;
+                })
+                .flatMap(investmentRepository::save)
+                .then();
 
-        List<InvestmentWallet> wallets = investmentRepository.findAll();
-        for (InvestmentWallet wallet : wallets) {
-            wallet.updateYield();
-        }
+        // userRepository.findById(userId)
+        // .orElseThrow(
+        // () -> new UnauthorizatedAccessException("Você não tem permissão para acessar
+        // essa conta."));
 
-        investmentRepository.saveAll(wallets);
+        // List<InvestmentWallet> wallets = investmentRepository.findAll();
+        // for (InvestmentWallet wallet : wallets) {
+        // wallet.updateYield();
+        // }
+
+        // investmentRepository.saveAll(wallets);
     }
 
     private InvestmentResponse toDTO(InvestmentWallet wallet) {

@@ -1,23 +1,23 @@
 package br.com.bank.java_bank.services;
 
-import java.util.List;
-
 import br.com.bank.java_bank.domain.DTO.AccountResponse;
 import br.com.bank.java_bank.domain.DTO.CreateAccountRequest;
 import br.com.bank.java_bank.domain.DTO.DepositRequest;
 import br.com.bank.java_bank.domain.DTO.TransferPixRequest;
 import br.com.bank.java_bank.domain.DTO.WithdrawRequest;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public interface AccountWalletService {
-    List<AccountResponse> getAllMyAccounts();
+    Flux<AccountResponse> getAllMyAccounts();
     
-    AccountResponse getAccountByPix(String pix);
+    Mono<AccountResponse> getAccountByPix(String pix);
 
-    AccountResponse createAccount(CreateAccountRequest request);
+    Mono<Void> createAccount(CreateAccountRequest request);
 
-    void deposit(DepositRequest request);
+    Mono<Void> deposit(DepositRequest request);
 
-    void withdraw(WithdrawRequest request);
+    Mono<Void> withdraw(WithdrawRequest request);
 
-    void transfer(TransferPixRequest request);
+    Mono<Void> transfer(TransferPixRequest request);
 }

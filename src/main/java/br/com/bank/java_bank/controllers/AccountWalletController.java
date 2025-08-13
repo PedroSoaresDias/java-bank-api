@@ -1,13 +1,11 @@
 package br.com.bank.java_bank.controllers;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -22,6 +20,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/accounts")
@@ -39,8 +39,8 @@ public class AccountWalletController {
         @ApiResponse(responseCode = "403", description = "O usuário não tem permissão de acessar as contas")    
     })
     @GetMapping
-    public ResponseEntity<List<AccountResponse>> getAllAccounts() {
-        return ResponseEntity.ok(service.getAllMyAccounts());
+    public Flux<AccountResponse> getAllAccounts() {
+        return service.getAllMyAccounts();
     }
 
     @Operation(summary = "Buscar a conta corrente do usuário autenticado com a chave Pix")
@@ -50,8 +50,8 @@ public class AccountWalletController {
         @ApiResponse(responseCode = "404", description = "Conta corrente não encontrada")    
     })
     @GetMapping("/{pix}")
-    public ResponseEntity<AccountResponse> getAccountByPix(@Valid @PathVariable("pix") String pix) {
-        return ResponseEntity.ok(service.getAccountByPix(pix));
+    public Mono<AccountResponse> getAccountByPix(@Valid @PathVariable("pix") String pix) {
+        return service.getAccountByPix(pix);
     }
 
     @Operation(summary = "Criar uma conta corrente com o usuário autenticado")
@@ -61,9 +61,9 @@ public class AccountWalletController {
         @ApiResponse(responseCode = "403", description = "O usuário não tem permissão de criar uma conta")
     })
     @PostMapping
-    public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
-        service.createAccount(request);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<Void> createAccount(@Valid @RequestBody CreateAccountRequest request) {
+        return service.createAccount(request);
     }
 
     @Operation(summary = "Fazer um depósito na conta corrente com o usuário autenticado")
@@ -74,9 +74,9 @@ public class AccountWalletController {
         @ApiResponse(responseCode = "404", description = "Conta corrente não encontrada")
     })
     @PostMapping("/deposit")
-    public ResponseEntity<Void> deposit(@Valid @RequestBody DepositRequest request) {
-        service.deposit(request);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> deposit(@Valid @RequestBody DepositRequest request) {
+        return service.deposit(request);
     }
 
     @Operation(summary = "Fazer um saque da conta corrente com o usuário autenticado")
@@ -87,9 +87,9 @@ public class AccountWalletController {
         @ApiResponse(responseCode = "404", description = "Conta corrente não encontrada")
     })
     @PostMapping("/withdraw")
-    public ResponseEntity<Void> withdraw(@Valid @RequestBody WithdrawRequest request) {
-        service.withdraw(request);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> withdraw(@Valid @RequestBody WithdrawRequest request) {
+        return service.withdraw(request);
     }
 
     @Operation(summary = "Fazer uma transferência entre contas corrente com o usuário autenticado")
@@ -101,8 +101,8 @@ public class AccountWalletController {
         @ApiResponse(responseCode = "404", description = "Conta de destino não encontrada"),
     })
     @PostMapping("/transfer")
-    public ResponseEntity<Void> transfer(@Valid @RequestBody TransferPixRequest request) {
-        service.transfer(request);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> transfer(@Valid @RequestBody TransferPixRequest request) {
+        return service.transfer(request);
     }
 }

@@ -8,82 +8,79 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ServerWebExchange;
 
 import br.com.bank.java_bank.domain.DTO.ErrorResponse;
-import jakarta.servlet.http.HttpServletRequest;
+import reactor.core.publisher.Mono;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoFundsEnoughException.class)
-    public ResponseEntity<ErrorResponse> handleNoFunds(NoFundsEnoughException ex, HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex, request);
+    public Mono<ResponseEntity<ErrorResponse>> handleNoFunds(NoFundsEnoughException ex, ServerWebExchange exchange) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), exchange);
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorResponse> handleAuthentication(AuthenticationException ex, HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex, request);
+    public Mono<ResponseEntity<ErrorResponse>> handleAuthentication(AuthenticationException ex, ServerWebExchange exchange) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), exchange);
     }
 
     @ExceptionHandler(UnauthorizatedAccessException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorizatedAccess(UnauthorizatedAccessException ex, HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex, request);
+    public Mono<ResponseEntity<ErrorResponse>> handleUnauthorizatedAccess(UnauthorizatedAccessException ex, ServerWebExchange exchange) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), exchange);
     }
 
     @ExceptionHandler(AccountNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleAccountNotFound(AccountNotFoundException ex,
-            HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.NOT_FOUND, ex, request);
+    public Mono<ResponseEntity<ErrorResponse>> handleAccountNotFound(AccountNotFoundException ex,
+            ServerWebExchange exchange) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), exchange);
     }
 
     @ExceptionHandler(InvestmentNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleInvestmentNotFound(InvestmentNotFoundException ex,
-            HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.NOT_FOUND, ex, request);
+    public Mono<ResponseEntity<ErrorResponse>> handleInvestmentNotFound(InvestmentNotFoundException ex,
+            ServerWebExchange exchange) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), exchange);
     }
 
     @ExceptionHandler(AccountWithInvestmentException.class)
-    public ResponseEntity<ErrorResponse> handleAccountWithInvestment(AccountWithInvestmentException ex,
-            HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex, request);
+    public Mono<ResponseEntity<ErrorResponse>> handleAccountWithInvestment(AccountWithInvestmentException ex,
+            ServerWebExchange exchange) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), exchange);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex,
-            HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.NOT_FOUND, ex, request);
+    public Mono<ResponseEntity<ErrorResponse>> handleUserNotFound(UserNotFoundException ex,
+            ServerWebExchange exchange) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), exchange);
     }
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationError(MethodArgumentNotValidException ex,
-            HttpServletRequest request) {
+    public Mono<ResponseEntity<ErrorResponse>> handleValidationError(MethodArgumentNotValidException ex,
+            ServerWebExchange exchange) {
         String errorMsg = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(field -> field.getField() + ": " + field.getDefaultMessage())
                 .collect(Collectors.joining("; "));
 
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, errorMsg, request.getRequestURI());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, errorMsg, exchange);
     }
     
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleUnexpectedError(Exception ex, HttpServletRequest request) {
+    public Mono<ResponseEntity<ErrorResponse>> handleUnexpectedError(Exception ex, ServerWebExchange exchange) {
         ex.printStackTrace(); // log interno
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro inesperado", request.getRequestURI());
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro inesperado", exchange);
     }
 
-    private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, Exception ex, HttpServletRequest request) {
-        return buildErrorResponse(status, ex.getMessage(), request.getRequestURI());
-    }
-
-    private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String message, String path) {
+    private Mono<ResponseEntity<ErrorResponse>> buildErrorResponse(HttpStatus status, String message, ServerWebExchange exchange) {
         ErrorResponse error = new ErrorResponse(
             status.value(),
             status.getReasonPhrase(),
             message,
-            path,
+            exchange.getRequest().getPath().value(),
             LocalDateTime.now()
         );
-        return ResponseEntity.status(status).body(error);
+        return Mono.just(ResponseEntity.status(status).body(error));
     }
 }

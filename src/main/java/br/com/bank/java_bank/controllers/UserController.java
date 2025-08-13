@@ -1,9 +1,6 @@
 package br.com.bank.java_bank.controllers;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.bank.java_bank.domain.DTO.CreateUserRequest;
@@ -21,6 +19,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/users")
@@ -35,8 +35,8 @@ public class UserController {
     @Operation(summary = "Buscar os dados de todos os usuários")
     @ApiResponse(responseCode = "200", description = "Todos os usuários")
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public Flux<UserResponse> getAllUsers() {
+        return userService.getAllUsers();
     }
 
     @Operation(summary = "Buscar os dados de um usuário pelo Id")
@@ -45,8 +45,8 @@ public class UserController {
         @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserById(@Valid @PathVariable("id") Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+    public Mono<UserResponse> getUserById(@Valid @PathVariable("id") Long id) {
+        return userService.getUserById(id);
     }
 
     @Operation(summary = "Criar um usuário")
@@ -55,9 +55,9 @@ public class UserController {
         @ApiResponse(responseCode = "400", description = "Falha ao criar um usuário")
     })
     @PostMapping
-    public ResponseEntity<Void> createUser(@Valid @RequestBody CreateUserRequest request) {
-        userService.createUser(request);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<Void> createUser(@Valid @RequestBody CreateUserRequest request) {
+        return userService.createUser(request);
     }
 
     @Operation(summary = "Atualizar um usuário definido pelo Id")
@@ -67,9 +67,9 @@ public class UserController {
         @ApiResponse(responseCode = "404", description = "Usuário não encontrado")    
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateUser(@PathVariable("id") Long id, @Valid @RequestBody CreateUserRequest request) {
-        userService.updateUser(id, request);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> updateUser(@PathVariable("id") Long id, @Valid @RequestBody CreateUserRequest request) {
+        return userService.updateUser(id, request);
     }
 
     @Operation(summary = "Excluir um usuário definido pelo Id")
@@ -78,8 +78,8 @@ public class UserController {
         @ApiResponse(responseCode = "404", description = "Usuário não encontrado")    
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@Valid @PathVariable("id") Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> deleteUser(@Valid @PathVariable("id") Long id) {
+        return userService.deleteUser(id);
     }
 }

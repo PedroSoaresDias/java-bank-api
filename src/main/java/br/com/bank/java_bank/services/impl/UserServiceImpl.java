@@ -1,8 +1,5 @@
 package br.com.bank.java_bank.services.impl;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +9,8 @@ import br.com.bank.java_bank.domain.model.User;
 import br.com.bank.java_bank.domain.repository.UserRepository;
 import br.com.bank.java_bank.exceptions.UserNotFoundException;
 import br.com.bank.java_bank.services.UserService;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -24,51 +23,48 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        List<UserResponse> responses = users.stream()
-            .map(this::toDTO)
-            .collect(Collectors.toList());
-        
-        return responses;
+    public Flux<UserResponse> getAllUsers() {
+        return userRepository.findAll().map(this::toDTO);
     }
 
     @Override
-    public UserResponse getUserById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-        UserResponse response = toDTO(user);
-        return response;
+    public Mono<UserResponse> getUserById(Long id) {
+        return userRepository.findById(id)
+                .map(this::toDTO)
+                .switchIfEmpty(Mono.error(new UserNotFoundException("Usuário não encontrado")));
     }
 
     @Override
-    public void createUser(CreateUserRequest request) {
+    public Mono<Void> createUser(CreateUserRequest request) {
         User user = new User();
 
         user.setName(request.name());
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
 
-        userRepository.save(user);
+        return userRepository.save(user).then();
     }
 
     @Override
-    public void updateUser(Long id, CreateUserRequest request) {
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-
-        user.setName(request.name());
-        user.setEmail(request.email());
-
-        if (request.password() != null) {
-            user.setPassword(passwordEncoder.encode(request.password()));
-        }
-
-        userRepository.save(user);
+    public Mono<Void> updateUser(Long id, CreateUserRequest request) {
+        return userRepository.findById(id)
+                .switchIfEmpty(Mono.error(new UserNotFoundException("Usuário não encontrado")))
+                .flatMap(user -> {
+                    user.setName(request.name());
+                    user.setEmail(request.email());
+                    if (request.password() != null) {
+                        user.setPassword(passwordEncoder.encode(request.password()));
+                    }
+                    return userRepository.save(user);
+                }).then();
     }
 
     @Override
-    public void deleteUser(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-        userRepository.delete(user);
+    public Mono<Void> deleteUser(Long id) {
+        return userRepository.findById(id)
+                .switchIfEmpty(Mono.error(new UserNotFoundException("Usuário não encontrado")))
+                .flatMap(userRepository::delete)
+                .then();
     }
 
     private UserResponse toDTO(User user) {

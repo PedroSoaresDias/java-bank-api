@@ -1,18 +1,15 @@
 package br.com.bank.java_bank.domain.repository;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
 import br.com.bank.java_bank.domain.model.InvestmentWallet;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-@Repository
-public interface InvestmentRepository extends JpaRepository<InvestmentWallet, Long> {    
-    Optional<InvestmentWallet> findByPixContaining(String pix);
+public interface InvestmentRepository extends ReactiveCrudRepository<InvestmentWallet, Long> {    
+    Mono<InvestmentWallet> findByPixContaining(String pix);
 
-    List<InvestmentWallet> findAllByUserId(Long userId);
+    Flux<InvestmentWallet> findAllByUserId(Long userId);
 
-    boolean existsByPix(String pix);
+    Mono<Boolean> existsByPix(String pix);
 }

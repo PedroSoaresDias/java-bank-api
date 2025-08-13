@@ -1,7 +1,6 @@
 package br.com.bank.java_bank.domain.DTO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -18,7 +17,6 @@ public record CreateUserRequest(
                 
         @Schema(description = "Email do usuário", example = "email@email.com")
         @Email(message = "Coloque um email válido")
-        @Column(unique = true)
         @NotBlank(message = "O email não pode está em branco")
         @NotNull(message = "O email não pode ser nulo")
         @NotEmpty(message = "O email não pode está vazio")

@@ -1,18 +1,18 @@
 package br.com.bank.java_bank.services;
 
-import java.util.List;
-
 import br.com.bank.java_bank.domain.DTO.CreateUserRequest;
 import br.com.bank.java_bank.domain.DTO.UserResponse;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public interface UserService {
-    List<UserResponse> getAllUsers();
+    Flux<UserResponse> getAllUsers();
 
-    UserResponse getUserById(Long id);
+    Mono<UserResponse> getUserById(Long id);
 
-    void createUser(CreateUserRequest request);
+    Mono<Void> createUser(CreateUserRequest request);
 
-    void updateUser(Long id, CreateUserRequest request);
+    Mono<Void> updateUser(Long id, CreateUserRequest request);
 
-    void deleteUser(Long id);
+    Mono<Void> deleteUser(Long id);
 }

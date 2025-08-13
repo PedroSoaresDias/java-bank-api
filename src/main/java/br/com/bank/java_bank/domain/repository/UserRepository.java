@@ -1,13 +1,10 @@
 package br.com.bank.java_bank.domain.repository;
 
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
 import br.com.bank.java_bank.domain.model.User;
+import reactor.core.publisher.Mono;
 
-@Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByEmail(String email);
+public interface UserRepository extends ReactiveCrudRepository<User, Long> {
+    Mono<User> findByEmail(String email);
 }

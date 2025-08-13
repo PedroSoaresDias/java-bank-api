@@ -1,18 +1,15 @@
 package br.com.bank.java_bank.domain.repository;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
 import br.com.bank.java_bank.domain.model.AccountWallet;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-@Repository
-public interface AccountRepository extends JpaRepository<AccountWallet, Long> {
-    Optional<AccountWallet> findByPixContaining(String pix);
+public interface AccountRepository extends ReactiveCrudRepository<AccountWallet, Long> {
+    Mono<AccountWallet> findByPixContaining(String pix);
     
-    List<AccountWallet> findAccountsByUserId(Long userId);
+    Flux<AccountWallet> findAccountsByUserId(Long userId);
 
-    boolean existsByPix(String pix);
+    Mono<Boolean> existsByPix(String pix);
 }
