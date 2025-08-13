@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface InvestmentRepository extends ReactiveCrudRepository<InvestmentWallet, Long> {    
-    Mono<InvestmentWallet> findByPixContaining(String pix);
+    Mono<InvestmentWallet> findByPix(String pix);
 
     Flux<InvestmentWallet> findAllByUserId(Long userId);
 

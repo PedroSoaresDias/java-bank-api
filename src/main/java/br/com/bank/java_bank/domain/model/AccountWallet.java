@@ -1,5 +1,7 @@
 package br.com.bank.java_bank.domain.model;
 
+import java.math.BigDecimal;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -16,19 +18,19 @@ public class AccountWallet {
     @Id
     private Long id;
     private String pix;
-    private long balance;
+    private BigDecimal balance;
 
     @Column("user_id")
     private Long userId;
 
-    public void deposit(long amount) {
-        this.balance += amount;
+    public void deposit(BigDecimal amount) {
+        this.balance = balance.add(amount);
     }
     
-    public void withdraw(long amount) {
-        if (balance < amount)
+    public void withdraw(BigDecimal amount) {
+        if (this.balance.compareTo(amount) < 0)
             throw new NoFundsEnoughException("Saldo insuficiente para realizar o saque.");
 
-        this.balance -= amount;
+        this.balance = balance.subtract(amount);
     }
 }

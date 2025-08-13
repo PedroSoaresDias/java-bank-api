@@ -1,5 +1,7 @@
 package br.com.bank.java_bank.domain.DTO;
 
+import java.math.BigDecimal;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -15,10 +17,10 @@ public record CreateInvestmentWalletRequest(
                         
         @Schema(description = "Valor da taxa de rendimento", example = "1")
         @Positive(message = "O valor da taxa deve ser positivo")
-        long tax,
+        BigDecimal tax,
                         
         @Schema(description = "Valor do depósito inicial e do saldo em centavos", example = "10000")
         @Positive(message = "O valor em dinheiro deve ser positivo")
-        long amount) {
+        BigDecimal amount) {
 
 }

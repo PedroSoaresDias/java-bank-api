@@ -33,24 +33,20 @@ public class AccountWalletServiceImpl implements AccountWalletService {
     @Override
     public Flux<AccountResponse> getAllMyAccounts() {
         return getAuthenticatedUserIdOrError()
-                .flatMapMany(userId -> {
-                    System.out.println("Buscando contas para o usuário: " + userId);
-                    return accountRepository.findAccountsByUserId(userId)
-                            .doOnNext(wallet -> System.out.println("Conta encontrada: " + wallet.getPix()))
-                            .map(this::convertToDTO);
-                });
-
+                .flatMapMany(userId -> accountRepository.findAccountsByUserId(userId)
+                        .flatMap(wallet -> verifyOwnership(wallet,
+                                userId)))
+                .map(this::convertToDTO);
     }
 
     @Override
     public Mono<AccountResponse> getAccountByPix(String pix) {
         return getAuthenticatedUserIdOrError()
-                .flatMap(userId -> {
-                    return accountRepository.findByPixContaining(pix)
-                            .filter(wallet -> wallet.getUserId().equals(userId))
-                            .switchIfEmpty(Mono.error(new AccountNotFoundException("Conta não encontrada")))
-                            .map(this::convertToDTO);
-                });
+                .flatMap(userId -> accountRepository.findByPix(pix)
+                        .switchIfEmpty(Mono.error(new AccountNotFoundException("Conta não encontrada")))
+                        .flatMap(wallet -> verifyOwnership(wallet, userId)))
+                        .map(this::convertToDTO);
+
     }
 
     @Override
@@ -77,7 +73,7 @@ public class AccountWalletServiceImpl implements AccountWalletService {
     @Override
     public Mono<Void> deposit(DepositRequest request) {
         return getAuthenticatedUserIdOrError()
-                .flatMap(userId -> accountRepository.findByPixContaining(request.pix())
+                .flatMap(userId -> accountRepository.findByPix(request.pix())
                         .switchIfEmpty(Mono.error(new AccountNotFoundException("Conta não encontrada")))
                         .flatMap(wallet -> {
                             if (!wallet.getUserId().equals(userId)) {
@@ -91,7 +87,7 @@ public class AccountWalletServiceImpl implements AccountWalletService {
 
     @Override
     public Mono<Void> withdraw(WithdrawRequest request) {
-        return getAuthenticatedUserIdOrError().flatMap(userId -> accountRepository.findByPixContaining(request.pix())
+        return getAuthenticatedUserIdOrError().flatMap(userId -> accountRepository.findByPix(request.pix())
                 .switchIfEmpty(Mono.error(new AccountNotFoundException("Conta não encontrada")))
                 .flatMap(wallet -> {
                     if (!wallet.getUserId().equals(userId)) {
@@ -107,11 +103,11 @@ public class AccountWalletServiceImpl implements AccountWalletService {
     public Mono<Void> transfer(TransferPixRequest request) {
         return getAuthenticatedUserIdOrError()
                 .flatMap(userId -> {
-                    Mono<AccountWallet> sourceMono = accountRepository.findByPixContaining(request.fromPix())
+                    Mono<AccountWallet> sourceMono = accountRepository.findByPix(request.fromPix())
                             .switchIfEmpty(
                                     Mono.error(new AccountNotFoundException("Conta de origem não foi encontrada")));
 
-                    Mono<AccountWallet> targetMono = accountRepository.findByPixContaining(request.toPix())
+                    Mono<AccountWallet> targetMono = accountRepository.findByPix(request.toPix())
                             .switchIfEmpty(
                                     Mono.error(new AccountNotFoundException("Conta de destino não foi encontrada")));
 
@@ -133,6 +129,13 @@ public class AccountWalletServiceImpl implements AccountWalletService {
                                         .then();
                             });
                 });
+    }
+
+    private <T extends AccountWallet> Mono<T> verifyOwnership(T wallet, Long userId) {
+        if (!wallet.getUserId().equals(userId)) {
+            return Mono.error(new UnauthorizatedAccessException("Você não tem permissão para acessar essa conta."));
+        }
+        return Mono.just(wallet);
     }
 
     private Mono<Long> getAuthenticatedUserIdOrError() {

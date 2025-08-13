@@ -1,5 +1,7 @@
 package br.com.bank.java_bank.domain.DTO;
 
+import java.math.BigDecimal;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -15,6 +17,6 @@ public record CreateAccountRequest(
                         
         @Schema(description = "Valor do saldo em centavos", example = "10000")
         @Positive(message = "O valor do saldo deve ser positivo")
-        long balance) {
+        BigDecimal balance) {
 
 }

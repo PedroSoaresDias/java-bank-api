@@ -51,7 +51,7 @@ public class InvestmentWalletServiceImpl implements InvestmentWalletService {
     public Mono<InvestmentResponse> findInvestmentByPix(String pix) {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
-        return investmentRepository.findByPixContaining(pix)
+        return investmentRepository.findByPix(pix)
                 .filter(wallet -> wallet.getUserId().equals(userId))
                 .switchIfEmpty(Mono.error(new InvestmentNotFoundException("Conta de investimentos não encontrada.")))
                 .map(this::toDTO);
@@ -92,10 +92,10 @@ public class InvestmentWalletServiceImpl implements InvestmentWalletService {
     public Mono<Void> invest(TransferPixRequest request) {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
-        Mono<AccountWallet> accountMono = accountRepository.findByPixContaining(request.fromPix())
+        Mono<AccountWallet> accountMono = accountRepository.findByPix(request.fromPix())
                 .filter(w -> w.getUserId().equals(userId))
                 .switchIfEmpty(Mono.error(new AccountNotFoundException("Conta de origem não foi encontrada")));
-        Mono<InvestmentWallet> investmentMono = investmentRepository.findByPixContaining(request.toPix())
+        Mono<InvestmentWallet> investmentMono = investmentRepository.findByPix(request.toPix())
                 .filter(i -> i.getUserId().equals(userId))
                 .switchIfEmpty(Mono.error(new InvestmentNotFoundException(
                         "Carteira de investimento não encontrada ou não pertence ao usuário.")));
@@ -122,10 +122,10 @@ public class InvestmentWalletServiceImpl implements InvestmentWalletService {
     public Mono<Void> withdraw(TransferPixRequest request) {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
-        Mono<AccountWallet> accountMono = accountRepository.findByPixContaining(request.fromPix())
+        Mono<AccountWallet> accountMono = accountRepository.findByPix(request.fromPix())
                 .filter(w -> w.getUserId().equals(userId))
                 .switchIfEmpty(Mono.error(new AccountNotFoundException("Conta de origem não foi encontrada")));
-        Mono<InvestmentWallet> investmentMono = investmentRepository.findByPixContaining(request.toPix())
+        Mono<InvestmentWallet> investmentMono = investmentRepository.findByPix(request.toPix())
                 .filter(i -> i.getUserId().equals(userId))
                 .switchIfEmpty(Mono.error(new InvestmentNotFoundException(
                         "Carteira de investimento não encontrada ou não pertence ao usuário.")));
