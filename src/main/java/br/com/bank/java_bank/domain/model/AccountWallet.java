@@ -1,6 +1,7 @@
 package br.com.bank.java_bank.domain.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import br.com.bank.java_bank.exceptions.NoFundsEnoughException;
@@ -16,6 +17,8 @@ public class AccountWallet {
     private Long id;
     private String pix;
     private long balance;
+
+    @Column("user_id")
     private Long userId;
 
     public void deposit(long amount) {

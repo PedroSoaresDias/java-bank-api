@@ -5,14 +5,12 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-
 
 @Component
 public class JwtTokenValidator {
@@ -21,10 +19,10 @@ public class JwtTokenValidator {
     @Value("${jwt.secret}")
     private String secret;
 
-    public boolean validateToken(String token, UserDetails userDetails) {
+    public boolean validateToken(String token) {
         try {
-            String username = getUserIdFromToken(token);
-            return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+            DecodedJWT jwt = JWT.require(Algorithm.HMAC256(secret)).build().verify(token);
+            return !jwt.getExpiresAt().before(new Date());
         } catch (JWTVerificationException e) {
             logger.warn("Falha na validação do token: {}", e.getMessage());
             return false;
@@ -41,8 +39,8 @@ public class JwtTokenValidator {
         }
     }
 
-    private boolean isTokenExpired(String token) {
-        DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(secret)).build().verify(token);
-        return decodedJWT.getExpiresAt().before(new Date());
-    }
+    // private boolean isTokenExpired(String token) {
+    //     DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(secret)).build().verify(token);
+    //     return decodedJWT.getExpiresAt().before(new Date());
+    // }
 }
