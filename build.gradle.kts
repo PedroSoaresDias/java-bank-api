@@ -31,9 +31,11 @@ dependencies {
 	implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.9")
 	implementation("com.auth0:java-jwt:4.5.0")
 	implementation("io.github.cdimascio:dotenv-java:2.2.3")
+	implementation("org.flywaydb:flyway-core")
+    runtimeOnly("org.postgresql:postgresql") // JDBC driver para Flyway
+    implementation("org.postgresql:r2dbc-postgresql")
 	compileOnly("org.projectlombok:lombok")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
-	runtimeOnly("io.r2dbc:r2dbc-h2")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
     	exclude(group = "org.springframework.boot", module = "spring-boot-starter-web")

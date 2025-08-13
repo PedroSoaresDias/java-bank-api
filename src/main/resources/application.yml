@@ -5,24 +5,29 @@ spring:
   threads:
     virtual:
       enabled: true
+  
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
   r2dbc:
-    url: r2dbc:h2:mem:///java-bank;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: bank
-    password:
+    url: ${PG_URL}
+    username: ${PG_USER}
+    password: ${PG_PASSWORD}
     show-sql: true
+
   sql:
     init:
-      mode: always
-      schema-locations: classpath:schema.sql
-      data-locations: classpath:data.sql
+      mode: never
 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-      settings:
-        trace: true
-        web-allow-others: false
+  # h2:
+  #   console:
+  #     enabled: true
+  #     path: /h2-console
+  #     settings:
+  #       trace: true
+  #       web-allow-others: false
 
 springdoc:
   api-docs:
