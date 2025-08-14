@@ -1,11 +1,11 @@
-package br.com.bank.java_bank.domain.model;
+package br.com.bank.account_service.domain.model;
 
 import java.math.BigDecimal;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-import br.com.bank.java_bank.exceptions.NoFundsEnoughException;
+import br.com.bank.account_service.exceptions.NoFundsEnoughException;
 
 import lombok.Getter;
 import lombok.Setter;
