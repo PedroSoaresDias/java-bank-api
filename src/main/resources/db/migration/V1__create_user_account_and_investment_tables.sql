@@ -8,9 +8,9 @@ CREATE TABLE tb_user (
 CREATE TABLE account_wallet (
     id SERIAL PRIMARY KEY,
     pix VARCHAR(255) UNIQUE NOT NULL,
-    balance DECIMAL(19,2) NOT NULL,
+    balance DECIMAL(19,2) NOT NULL DEFAULT 0.00,
     user_id BIGINT NOT NULL,
-    CONSTRAINT fk_account_user FOREIGN KEY (user_id) REFERENCES tb_user(id)
+    CONSTRAINT fk_account_user FOREIGN KEY (user_id) REFERENCES tb_user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE investment_wallet (
@@ -20,5 +20,5 @@ CREATE TABLE investment_wallet (
     tax DECIMAL(5, 2) NOT NULL,
     initial_deposit DECIMAL(19, 2) NOT NULL,
     user_id BIGINT NOT NULL,
-    CONSTRAINT fk_investment_user FOREIGN KEY (user_id) REFERENCES tb_user(id)
+    CONSTRAINT fk_investment_user FOREIGN KEY (user_id) REFERENCES tb_user(id) ON DELETE CASCADE
 );

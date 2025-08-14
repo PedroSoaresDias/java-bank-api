@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import br.com.bank.java_bank.domain.DTO.AccountResponse;
+// import br.com.bank.java_bank.domain.DTO.AccountWithUserResponse;
 import br.com.bank.java_bank.domain.DTO.CreateAccountRequest;
 import br.com.bank.java_bank.domain.DTO.DepositRequest;
 import br.com.bank.java_bank.domain.DTO.TransferPixRequest;
@@ -20,11 +21,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/accounts")
+@Slf4j
 @Tag(name = "Conta Corrente", description = "Operações com conta corrente")
 public class AccountWalletController {
     private final AccountWalletService service;
@@ -40,6 +43,7 @@ public class AccountWalletController {
     })
     @GetMapping
     public Flux<AccountResponse> getAllAccounts() {
+        log.debug("Controller: recebida requisição para buscar todas as contas");
         return service.getAllMyAccounts();
     }
 

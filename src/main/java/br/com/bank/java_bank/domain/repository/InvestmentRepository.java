@@ -11,5 +11,7 @@ public interface InvestmentRepository extends ReactiveCrudRepository<InvestmentW
 
     Flux<InvestmentWallet> findAllByUserId(Long userId);
 
+    Mono<InvestmentWallet> findByPixAndUserId(String pix, Long userId);
+
     Mono<Boolean> existsByPix(String pix);
 }

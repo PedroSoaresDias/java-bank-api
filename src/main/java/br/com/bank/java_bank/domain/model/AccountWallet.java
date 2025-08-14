@@ -3,7 +3,7 @@ package br.com.bank.java_bank.domain.model;
 import java.math.BigDecimal;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
+// import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import br.com.bank.java_bank.exceptions.NoFundsEnoughException;
@@ -18,9 +18,7 @@ public class AccountWallet {
     @Id
     private Long id;
     private String pix;
-    private BigDecimal balance;
-
-    @Column("user_id")
+    private BigDecimal balance = BigDecimal.ZERO;
     private Long userId;
 
     public void deposit(BigDecimal amount) {
