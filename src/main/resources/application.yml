@@ -5,6 +5,7 @@ spring:
   threads:
     virtual:
       enabled: true
+  
   datasource:
     url: jdbc:h2:mem:java-bank
     username: bank
@@ -36,3 +37,13 @@ springdoc:
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.data.r2dbc: DEBUG
+    org.springframework.r2dbc.connection: DEBUG
+    br.com.bank.java_bank: DEBUG
+    io.r2dbc.postgresql.QUERY: DEBUG
