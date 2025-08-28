@@ -1,8 +1,25 @@
 services:
+  postgres-java-bank:
+    image: postgres
+    container_name: postgres-java-bank
+    environment:
+      POSTGRES_DB: ${PG_DB}
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-bank:/var/lib/postgresql/data
+
   java-bank-api:
     image: java-bank-api
     container_name: java-bank-api
     ports:
       - 8080:8080
-    volumes:
-      - ./.env:/app/.env
+    env_file:
+      - .env
+    depends_on:
+      - postgres-java-bank
+
+volumes:
+  postgres-bank:

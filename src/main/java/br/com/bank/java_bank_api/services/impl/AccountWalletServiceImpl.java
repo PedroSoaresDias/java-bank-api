@@ -19,7 +19,7 @@ import br.com.bank.java_bank_api.services.AccountWalletService;
 import br.com.bank.java_bank_api.utils.SecurityUtil;
 import jakarta.transaction.Transactional;
 import br.com.bank.java_bank_api.domain.repository.UserRepository;
-import br.com.bank.java_bank_api.exceptions.AccountWithInvestmentException;
+import br.com.bank.java_bank_api.exceptions.PixInUseException;
 import br.com.bank.java_bank_api.exceptions.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,8 +53,12 @@ public class AccountWalletServiceImpl implements AccountWalletService {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
         AccountWallet wallet = accountRepository.findByPixContaining(pix)
-                .filter(w -> w.getUser().getId().equals(userId))
                 .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada."));
+
+        if (!wallet.getUser().getId().equals(userId)) {
+            throw new UnauthorizatedAccessException("Você não tem permissão para ver essa conta.");
+        }
+
         AccountResponse account = convertToDTO(wallet);
         return account;
     }
@@ -67,7 +71,7 @@ public class AccountWalletServiceImpl implements AccountWalletService {
                 .orElseThrow(() -> new AccountNotFoundException("Conta não encontrada."));
 
         if (accountRepository.existsByPix(request.pix())) {
-            throw new AccountWithInvestmentException("Já existe uma conta de investimento com essa chave Pix.");
+            throw new PixInUseException("Chave Pix em uso.");
         }
 
 

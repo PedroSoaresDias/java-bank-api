@@ -20,6 +20,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, ex, request);
     }
 
+    @ExceptionHandler(PixInUseException.class)
+    public ResponseEntity<ErrorResponse> handlePixInUse(PixInUseException ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex, request);
+    }
+
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthentication(AuthenticationException ex, HttpServletRequest request) {
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex, request);
@@ -27,7 +32,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UnauthorizatedAccessException.class)
     public ResponseEntity<ErrorResponse> handleUnauthorizatedAccess(UnauthorizatedAccessException ex, HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex, request);
+        return buildErrorResponse(HttpStatus.FORBIDDEN, ex, request);
     }
 
     @ExceptionHandler(AccountNotFoundException.class)
@@ -45,7 +50,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccountWithInvestmentException.class)
     public ResponseEntity<ErrorResponse> handleAccountWithInvestment(AccountWithInvestmentException ex,
             HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.NOT_FOUND, ex, request);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex, request);
     }
 
     @ExceptionHandler(UserNotFoundException.class)

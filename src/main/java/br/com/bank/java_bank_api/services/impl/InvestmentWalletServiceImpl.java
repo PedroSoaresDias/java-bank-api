@@ -56,8 +56,12 @@ public class InvestmentWalletServiceImpl implements InvestmentWalletService {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
         InvestmentWallet wallet = investmentRepository.findByPixContaining(pix)
-                .filter(w -> w.getUser().getId().equals(userId))
                 .orElseThrow(() -> new InvestmentNotFoundException("Investimento não encontrado"));
+
+        if (!wallet.getUser().getId().equals(userId)) {
+            throw new UnauthorizatedAccessException("Você não tem permissão para acessar essa conta.");
+        }
+
         InvestmentResponse response = toDTO(wallet);
         return response;
     }
