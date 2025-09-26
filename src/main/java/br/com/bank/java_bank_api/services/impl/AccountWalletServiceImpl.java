@@ -1,8 +1,9 @@
 package br.com.bank.java_bank_api.services.impl;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import br.com.bank.java_bank_api.domain.DTO.AccountResponse;
@@ -36,16 +37,15 @@ public class AccountWalletServiceImpl implements AccountWalletService {
     }
 
     @Override
-    public List<AccountResponse> getAllMyAccounts() {
+    public List<AccountResponse> getAllMyAccounts(Pageable pageable) {
         Long userId = SecurityUtil.getAuthenticatedUserId();
 
         userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-        List<AccountWallet> wallets = accountRepository.findAccountsByUserId(userId);
-        List<AccountResponse> response = wallets.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        Page<AccountWallet> wallets = accountRepository.findAccountsByUserId(pageable, userId);
+        Page<AccountResponse> response = wallets
+                .map(this::convertToDTO);
 
-        return response;
+        return response.toList();
     }
 
     @Override

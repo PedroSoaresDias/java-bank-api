@@ -2,6 +2,8 @@ package br.com.bank.java_bank_api.controllers;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.bank.java_bank_api.domain.DTO.CreateUserRequest;
@@ -35,8 +38,10 @@ public class UserController {
     @Operation(summary = "Buscar os dados de todos os usuários")
     @ApiResponse(responseCode = "200", description = "Todos os usuários")
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<List<UserResponse>> getAllUsers(@RequestParam(defaultValue = "1", name = "page") int page,
+            @RequestParam(defaultValue = "20", name = "size") int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
 
     @Operation(summary = "Buscar os dados de um usuário pelo Id")
@@ -45,7 +50,7 @@ public class UserController {
         @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserById(@Valid @PathVariable("id") Long id) {
+    public ResponseEntity<UserResponse> getUserById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
@@ -78,7 +83,7 @@ public class UserController {
         @ApiResponse(responseCode = "404", description = "Usuário não encontrado")    
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@Valid @PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable("id") Long id) {
         userService.deleteUser(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

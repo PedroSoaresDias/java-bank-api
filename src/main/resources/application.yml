@@ -5,7 +5,7 @@ spring:
   threads:
     virtual:
       enabled: true
-  
+
   datasource:
     url: ${PG_URL}
     username: ${PG_USER}

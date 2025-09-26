@@ -2,12 +2,15 @@ package br.com.bank.java_bank_api.controllers;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -41,8 +44,10 @@ public class AccountWalletController {
         @ApiResponse(responseCode = "403", description = "O usuário não tem permissão de acessar as contas")    
     })
     @GetMapping
-    public ResponseEntity<List<AccountResponse>> getAllAccounts() {
-        return ResponseEntity.ok(service.getAllMyAccounts());
+    public ResponseEntity<List<AccountResponse>> getAllAccounts(@RequestParam(defaultValue = "1", name = "page") int page,
+            @RequestParam(defaultValue = "20", name = "size") int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return ResponseEntity.ok(service.getAllMyAccounts(pageable));
     }
 
     @Operation(summary = "Buscar a conta corrente do usuário autenticado com a chave Pix")

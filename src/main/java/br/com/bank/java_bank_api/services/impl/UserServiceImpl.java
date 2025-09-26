@@ -1,8 +1,9 @@
 package br.com.bank.java_bank_api.services.impl;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,31 +25,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        List<UserResponse> responses = users.stream()
-            .map(this::toDTO)
-            .collect(Collectors.toList());
+    public List<UserResponse> getAllUsers(Pageable pageable) {
+        Page<User> users = userRepository.findAll(pageable);
+        Page<UserResponse> responses = users.map(this::toDTO);
 
-        return responses;
+        return responses.toList();
     }
 
     @Override
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("Usuário não encontrado"));
-        UserResponse response = toDTO(user);
-        return response;
+        return toDTO(user);
     }
 
     @Override
-    public void createUser(CreateUserRequest request) {
+    public UserResponse createUser(CreateUserRequest request) {
         User user = new User();
 
         user.setName(request.name());
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        return toDTO(savedUser);
     }
 
     @Override
