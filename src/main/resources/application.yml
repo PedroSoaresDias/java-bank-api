@@ -14,7 +14,7 @@ spring:
     show-sql: true
     open-in-view: false
     hibernate:
-      dll-auto: create
+      dll-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -36,7 +36,5 @@ logging:
     root: INFO
     org.springframework.web: DEBUG
     org.springframework.security: DEBUG
-    org.springframework.data.r2dbc: DEBUG
-    org.springframework.r2dbc.connection: DEBUG
     br.com.bank.java_bank: DEBUG
     io.r2dbc.postgresql.QUERY: DEBUG

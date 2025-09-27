@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import br.com.bank.java_bank_api.domain.DTO.AccountResponse;
 import br.com.bank.java_bank_api.domain.DTO.CreateAccountRequest;
 import br.com.bank.java_bank_api.domain.DTO.DepositRequest;
+import br.com.bank.java_bank_api.domain.DTO.TransactionResponse;
 import br.com.bank.java_bank_api.domain.DTO.TransferPixRequest;
 import br.com.bank.java_bank_api.domain.DTO.WithdrawRequest;
 import br.com.bank.java_bank_api.services.AccountWalletService;
@@ -45,7 +46,7 @@ public class AccountWalletController {
     })
     @GetMapping
     public ResponseEntity<List<AccountResponse>> getAllAccounts(@RequestParam(defaultValue = "1", name = "page") int page,
-            @RequestParam(defaultValue = "20", name = "size") int size) {
+            @RequestParam(defaultValue = "10", name = "size") int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         return ResponseEntity.ok(service.getAllMyAccounts(pageable));
     }
@@ -59,6 +60,19 @@ public class AccountWalletController {
     @GetMapping("/{pix}")
     public ResponseEntity<AccountResponse> getAccountByPix(@Valid @PathVariable("pix") String pix) {
         return ResponseEntity.ok(service.getAccountByPix(pix));
+    }
+
+    @Operation(summary = "Visualizar o extrato bancário da conta corrente do usuário autenticado com a chave Pix")
+    @ApiResponses(value={
+        @ApiResponse(responseCode = "200", description = "Extrato visualizado pela chave Pix"),
+        @ApiResponse(responseCode = "403", description = "O usuário não tem permissão de acessar o extrato dessa conta"),
+        @ApiResponse(responseCode = "404", description = "Conta corrente não encontrada para visualizar o extrato")    
+    })
+    @GetMapping("/{pix}/extrato")
+    public ResponseEntity<List<TransactionResponse>> getStatement(@RequestParam(defaultValue = "1", name = "page") int page,
+            @RequestParam(defaultValue = "10", name = "size") int size, @Valid @PathVariable("pix") String pix) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return ResponseEntity.ok(service.getStatement(pageable, pix));
     }
 
     @Operation(summary = "Criar uma conta corrente com o usuário autenticado")

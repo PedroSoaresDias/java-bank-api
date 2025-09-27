@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import br.com.bank.java_bank_api.domain.DTO.AccountResponse;
 import br.com.bank.java_bank_api.domain.DTO.CreateAccountRequest;
 import br.com.bank.java_bank_api.domain.DTO.DepositRequest;
+import br.com.bank.java_bank_api.domain.DTO.TransactionResponse;
 import br.com.bank.java_bank_api.domain.DTO.TransferPixRequest;
 import br.com.bank.java_bank_api.domain.DTO.WithdrawRequest;
 
@@ -16,6 +17,8 @@ public interface AccountWalletService {
     AccountResponse getAccountByPix(String pix);
 
     AccountResponse createAccount(CreateAccountRequest request);
+
+    List<TransactionResponse> getStatement(Pageable pageable, String pix);
 
     void deposit(DepositRequest request);
 

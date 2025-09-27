@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
         Page<User> users = userRepository.findAll(pageable);
         Page<UserResponse> responses = users.map(this::toDTO);
 
-        return responses.toList();
+        return responses.getContent();
     }
 
     @Override
